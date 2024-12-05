@@ -1,0 +1,31 @@
+package:
+  name: ervromancer
+  version: 0.1.0
+
+source:
+  path: .
+
+build:
+  number: 0
+  script: "{{ PYTHON }} -m pip install . -vv"
+
+requirements:
+  host:
+    - python
+    - pip
+    - setuptools
+  run:
+    - python
+    - bowtie2
+    - samtools
+    - bedtools
+    
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+
+about:
+  home: https://github.com/AuslanderLab/ervromancer
+  license: MIT
+  summary: Pipeline for HERV alignment and analysis
