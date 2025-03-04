@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ervmancer"
+version = "0.1.0"
+description = "ERV identification tool using bowtie2, samtools, and bedtools"
+readme = "README.md"
+requires-python = ">=3.6"
+dependencies = [
+    "tqdm",
+]
+license = {text = "MIT"}
+authors = [
+    {name = "Andrew Patterson", email = "Andrew.Patterson@pennmedicine.upenn.edu"},
+    {name = "Bryant Duong", email = "bduong@seas.upenn.edu"}
+]
+
+[project.scripts]
+ervmancer = "ervmancer.main:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

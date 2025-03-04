@@ -1,27 +1,32 @@
-{% set name = "ervromancer" %}
+{% set name = "ervmancer" %}
 {% set version = "0.1.0" %}
 
 package:
-  name: {{ name|lower }}
+  name: {{ name | lower }}
   version: {{ version }}
 
 source:
-  url: https://github.com/yourusername/{{ name }}/archive/v{{ version }}.tar.gz
-  sha256: # Add SHA256 hash of your source tarball here
+  path: .
 
 build:
   number: 0
+  no_git_env_vars: True
   noarch: python
-  script: "{{ PYTHON }} -m pip install . --no-deps -vv"
+  script: "{{ PYTHON }} -m pip install . --ignore-installed --no-deps"
   entry_points:
-    - ervromancer = ervromancer.main:main
+    - ervrmancer = ervmancer.main:main
 
 requirements:
+  channels:
+    - conda-forge
+    - bioconda
+    - defaults
   host:
-    - python >=3.6
+    - python >=3.8
+    - setuptools>=1.4.0
     - pip
   run:
-    - python >=3.6
+    - python >=3.8
     - bowtie2
     - samtools
     - bedtools
@@ -29,23 +34,22 @@ requirements:
 
 test:
   commands:
-    - ervromancer --help
+    - ervmancer --help
     - bowtie2 --help
     - samtools --help
     - bedtools --help
 
 about:
-  home: https://github.com/yourusername/ervromancer
+  home: https://github.com/AuslanderLab/ervmancer
   license: MIT
   license_family: MIT
   license_file: LICENSE
   summary: 'ERV identification tool using bowtie2, samtools, and bedtools'
   description: |
-    Ervromancer is a tool for identifying and analyzing endogenous retroviral elements
-    in genomic data using a pipeline of bowtie2 for alignment, samtools for processing,
-    and bedtools for genomic interval analysis.
-  doc_url: https://github.com/yourusername/ervromancer
-  dev_url: https://github.com/yourusername/ervromancer
+    ervmancer is a tool for identifying and analyzing HERVs in genomic data using a pipeline of bowtie2 for alignment, samtools for processing,
+    and bedtools.
+  doc_url: https://github.com/AuslanderLab/ervmancer
+  dev_url: https://github.com/AuslanderLab/ervmancer
 
 extra:
   recipe-maintainers:
