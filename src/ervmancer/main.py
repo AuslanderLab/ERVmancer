@@ -27,8 +27,8 @@ def get_data_path(filename):
 
 def main():
     parser = argparse.ArgumentParser(description='ervmancer')
-    parser.add_argument('--mode', choices=['strict', 'relaxed'], required=True,
-                        help="Alignment bounds (stringent, relaxed)")
+    parser.add_argument('--b', type=str, required=False,
+                        help="User provided path to self provided bowtie2 alignment file")
     parser.add_argument('--r1', required=False,
                         help='Absolute path to paired-end R1 fastq file.')
     parser.add_argument('--r2', required=False,
@@ -85,31 +85,7 @@ def main():
         herv_bed = get_data_path('hervs_genomic_coords.bed')
         logging.info(f"Using HERV BED file: {herv_bed}")
 
-        if paired:
-            logging.info("Going into strict mode, paired reads")
-            bt_cmd = f"""bowtie2 -p {args.num_cores} --very-sensitive --end-to-end -X 1500 \
-            --no-mixed --no-discordant --no-dovetail --no-unal --score-min L,-0.1,-0.1 \
-            -x {args.bowtie_index} -1 {read_filter.r1_path} -2 {read_filter.r2_path} -k 100 -S {sam_path} \
-            2> {read_filter.get_path('logs', base_name, 'bt2_paired_strict.err')}"""
-        else:
-            logging.info("Going into strict mode, single strand")
-            bt_cmd = f"""bowtie2 -p {args.num_cores} -N 1 -L 10 --very-sensitive --end-to-end --no-unal \
-            -x {args.bowtie_index} --score-min L,-0.1,-0.1 -U {read_filter.s1_path} -k 100 -S {sam_path} \
-            2> {read_filter.get_path('logs', base_name, 'bt2_single_strict.err')}"""
-        # else:  # relaxed mode
-        #     if paired:
-        #         logging.info("Going into relaxed mode, paired reads")
-        #         bt_cmd = f"""bowtie2 -p {args.num_cores} --very-sensitive --end-to-end --no-unal --no-mixed --no-discordant \
-        #         -x {args.bowtie_index} -1 {read_filter.r1_path} -2 {read_filter.r2_path} -k 100 -S {sam_path} \
-        #         2> {read_filter.get_path('logs', base_name, 'bt2_paired_relaxed.err')}"""
-        #     else:
-        #         logging.info("Going into relaxed mode, single strand")
-        #         bt_cmd = f"""bowtie2 -p {args.num_cores} --very-sensitive --end-to-end --no-unal \
-        #         -x {args.bowtie_index} -U {read_filter.s1_path} -k 100 -S {sam_path} \
-        #         2> {read_filter.get_path('logs', base_name, 'bt2_single_relaxed.err')}"""
-
         commands = [
-            bt_cmd,
             f"samtools view -bS {sam_path} -o {bam_path}",
             f"samtools sort -@ {args.num_cores} {bam_path} -o {sorted_bam}",
             f"samtools index {sorted_bam}",
@@ -119,6 +95,21 @@ def main():
             # Kmer step uses this intermediate output in the final dir
             f"samtools view -h -o {hervs_read} {bed_out}"
         ]
+        if not args.b:
+            # if bowtie file is not provided by user, add the bowtie 2 commands with unified mode parameters
+            if paired:
+                logging.info("Bowtie 2 - Unified Mode, paired reads")
+                bt_cmd = f"""bowtie2 -p {args.num_cores} --very-sensitive --end-to-end -X 1500 \
+                --no-mixed --no-discordant --no-dovetail --no-unal --score-min L,-0.1,-0.1 \
+                -x {args.bowtie_index} -1 {read_filter.r1_path} -2 {read_filter.r2_path} -k 100 -S {sam_path} \
+                2> {read_filter.get_path('logs', base_name, 'bt2_paired_strict.err')}"""
+            else:
+                logging.info("Bowtie 2 - Unified Mode, single strand")
+                bt_cmd = f"""bowtie2 -p {args.num_cores} -N 1 -L 10 --very-sensitive --end-to-end --no-unal \
+                -x {args.bowtie_index} --score-min L,-0.1,-0.1 -U {read_filter.s1_path} -k 100 -S {sam_path} \
+                2> {read_filter.get_path('logs', base_name, 'bt2_single_strict.err')}"""
+            # insert the bowtie 2 command to the front of the pipeline commands queue
+            commands.insert(0, bt_cmd)
 
         logging.info("Starting processing pipeline...")
         for cmd in tqdm(commands, desc="Processing commands"):

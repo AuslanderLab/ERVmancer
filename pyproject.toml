@@ -22,7 +22,7 @@ ervmancer = "ervmancer.main:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-include_package_data = true
+include-package-data = true
 
 [tool.setuptools.packages.find]
 where = ["src"]
