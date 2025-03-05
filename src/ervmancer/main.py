@@ -2,6 +2,7 @@ import argparse
 import logging
 import os
 import sys
+import datetime
 import subprocess
 import pkg_resources
 from tqdm import tqdm
@@ -14,6 +15,11 @@ def run_command(cmd):
     except subprocess.CalledProcessError as e:
         logging.error(f"Command failed: {cmd}")
         raise e
+
+
+def get_timestamp():
+    """Generate a timestamp string for file naming."""
+    return datetime.datetime.now().strftime("%Y%m%d_%H%M")
 
 
 def get_data_path(filename):
@@ -61,7 +67,7 @@ def main():
 
         os.makedirs(os.path.join(args.output_dir,
                     "intermediate_files"), exist_ok=True)
-        sys.exit()
+        timestamp = get_timestamp()
 
         if args.b:
             try:
@@ -81,21 +87,21 @@ def main():
                 sys.exit(1)
         else:
             outsam_pathname = read_filter.get_path(
-                'intermediate_files', f'{base_name}_bowtie2_all_hervs.bwa.read', 'sam')
+                'intermediate_files', f'{base_name}_{timestamp}_bowtie2_out', 'sam')
         outbam_pathname = read_filter.get_path(
-            'intermediate_files', f'{base_name}_all_hervs.bwa.read', 'bam')
+            'intermediate_files', f'{base_name}_{timestamp}_all_hervs', 'bam')
         sorted_outbam_pathname = read_filter.get_path(
-            'intermediate_files', f'{base_name}_all_hervs.bwa.read.sorted', 'bam')
+            'intermediate_files', f'{base_name}_{timestamp}_sorted', 'bam')
         converted_herv_gtf_to_bed = get_data_path('hervs_genomic_coords.bed')
         logging.info(f"Using HERV BED file: {converted_herv_gtf_to_bed}")
         outbed_pathname = read_filter.get_path(
-            'intermediate_files', f'multimap_input_all_hervs.bwa.read', 'bed')
+            'final', f'{base_name}_{timestamp}_multimap_', 'bed')
         # Bedtools intersect with HERV GTF file (Multimap)
         subset_outsam_pathname = read_filter.get_path(
-            'final', f'.bwa.read', 'sam')
+            'intermediate_files', f'{base_name}_{timestamp}_hervs_subset', 'sam')
         # Filter unique read appearances (step for KMER)
         subset_outbam_pathname = read_filter.get_path(
-            'final', f'{base_name}_all_hervs.bwa_read', 'bam')
+            'final', f'{base_name}_{timestamp}_all_hervs.bwa_read', 'bam')
 
         commands = [
             f"samtools view -bS {outsam_pathname} -o {outbam_pathname}",
