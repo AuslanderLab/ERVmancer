@@ -120,12 +120,12 @@ def main():
                 bt_cmd = f"""bowtie2 -p {args.num_cores} --very-sensitive --end-to-end -X 1500 \
                 --no-mixed --no-discordant --no-dovetail --no-unal --score-min L,-0.1,-0.1 \
                 -x {args.bowtie_index} -1 {read_filter.r1_path} -2 {read_filter.r2_path} -k 100 -S {outsam_pathname} \
-                2> {read_filter.get_path('logs', base_name, 'bt2_paired_strict.err')}"""
+                2> {read_filter.get_path('logs', base_name, f'bt2_paired_{timestamp}.err')}"""
             else:
                 logging.info("Bowtie 2 - Unified Mode, single strand")
                 bt_cmd = f"""bowtie2 -p {args.num_cores} -N 1 -L 10 --very-sensitive --end-to-end --no-unal \
                 -x {args.bowtie_index} --score-min L,-0.1,-0.1 -U {read_filter.s1_path} -k 100 -S {outsam_pathname} \
-                2> {read_filter.get_path('logs', base_name, 'bt2_single_strict.err')}"""
+                2> {read_filter.get_path('logs', base_name, f'bt2_single_{timestamp}.err')}"""
             # insert the bowtie 2 command to the front of the pipeline commands queue
             commands.insert(0, bt_cmd)
 
