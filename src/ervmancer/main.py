@@ -7,6 +7,26 @@ import subprocess
 import pkg_resources
 from tqdm import tqdm
 from .preprocessing.filter_reads import ReadFilter
+# from .preprocessing.subset_reads import *
+import hashlib
+import random
+import string
+
+
+def generate_random_hash(length=8):
+    """Generate a random hash string for file naming."""
+    # Create a random string
+    random_str = ''.join(random.choices(
+        string.ascii_lowercase + string.digits, k=16))
+    # Create a hash from it
+    hash_obj = hashlib.md5(random_str.encode())
+    # Return the first few characters of the hash
+    return hash_obj.hexdigest()[:length]
+
+
+def get_unique_id():
+    """Generate a unique ID for file naming."""
+    return generate_random_hash()
 
 
 def run_command(cmd):
@@ -15,11 +35,6 @@ def run_command(cmd):
     except subprocess.CalledProcessError as e:
         logging.error(f"Command failed: {cmd}")
         raise e
-
-
-def get_timestamp():
-    """Generate a timestamp string for file naming."""
-    return datetime.datetime.now().strftime("%Y%m%d_%H%M")
 
 
 def get_data_path(filename):
@@ -67,7 +82,7 @@ def main():
 
         os.makedirs(os.path.join(args.output_dir,
                     "intermediate_files"), exist_ok=True)
-        timestamp = get_timestamp()
+        unique_id = get_unique_id()
 
         if args.b:
             try:
@@ -87,21 +102,22 @@ def main():
                 sys.exit(1)
         else:
             outsam_pathname = read_filter.get_path(
-                'intermediate_files', f'{base_name}_{timestamp}_bowtie2_out', 'sam')
+                'intermediate_files', f'{base_name}_{unique_id}_bowtie2_out', 'sam')
+
         outbam_pathname = read_filter.get_path(
-            'intermediate_files', f'{base_name}_{timestamp}_all_hervs', 'bam')
+            'intermediate_files', f'{base_name}_{unique_id}_all_hervs', 'bam')
         sorted_outbam_pathname = read_filter.get_path(
-            'intermediate_files', f'{base_name}_{timestamp}_sorted', 'bam')
+            'intermediate_files', f'{base_name}_{unique_id}_sorted', 'bam')
         converted_herv_gtf_to_bed = get_data_path('hervs_genomic_coords.bed')
         logging.info(f"Using HERV BED file: {converted_herv_gtf_to_bed}")
         outbed_pathname = read_filter.get_path(
-            'final', f'{base_name}_{timestamp}_multimap_', 'bed')
+            'final', f'{base_name}_{unique_id}_multimap_', 'bed')
         # Bedtools intersect with HERV GTF file (Multimap)
         subset_outsam_pathname = read_filter.get_path(
-            'intermediate_files', f'{base_name}_{timestamp}_hervs_subset', 'sam')
+            'intermediate_files', f'{base_name}_{unique_id}_hervs_subset', 'sam')
         # Filter unique read appearances (step for KMER)
         subset_outbam_pathname = read_filter.get_path(
-            'final', f'{base_name}_{timestamp}_all_hervs.bwa_read', 'bam')
+            'final', f'{base_name}_{unique_id}_all_hervs.bwa_read', 'bam')
 
         commands = [
             f"samtools view -bS {outsam_pathname} -o {outbam_pathname}",
@@ -110,7 +126,7 @@ def main():
             # Multimap uses this intermediate output below in the final dir
             f"bedtools intersect -abam {sorted_outbam_pathname} -b {converted_herv_gtf_to_bed} -wa -wb -bed > {outbed_pathname}",
             # Kmer step uses this intermediate output in the final dir
-            f"bedtools intersect -abam {sorted_outbam_pathname} -b {converted_herv_gtf_to_bed} > {subset_outsam_pathname}",
+            f"bedtools intersect -abam {sorted_outbam_pathname} -b {converted_herv_gtf_to_bed} > {subset_outbam_pathname}",
             f"samtools view -h -o {subset_outsam_pathname} {subset_outbam_pathname}"
         ]
         if not args.b:
@@ -120,12 +136,12 @@ def main():
                 bt_cmd = f"""bowtie2 -p {args.num_cores} --very-sensitive --end-to-end -X 1500 \
                 --no-mixed --no-discordant --no-dovetail --no-unal --score-min L,-0.1,-0.1 \
                 -x {args.bowtie_index} -1 {read_filter.r1_path} -2 {read_filter.r2_path} -k 100 -S {outsam_pathname} \
-                2> {read_filter.get_path('logs', base_name, f'bt2_paired_{timestamp}.err')}"""
+                2> {read_filter.get_path('logs', base_name, f'bt2_paired_{unique_id}.err')}"""
             else:
                 logging.info("Bowtie 2 - Unified Mode, single strand")
                 bt_cmd = f"""bowtie2 -p {args.num_cores} -N 1 -L 10 --very-sensitive --end-to-end --no-unal \
                 -x {args.bowtie_index} --score-min L,-0.1,-0.1 -U {read_filter.s1_path} -k 100 -S {outsam_pathname} \
-                2> {read_filter.get_path('logs', base_name, f'bt2_single_{timestamp}.err')}"""
+                2> {read_filter.get_path('logs', base_name, f'bt2_single_{unique_id}.err')}"""
             # insert the bowtie 2 command to the front of the pipeline commands queue
             commands.insert(0, bt_cmd)
 
