@@ -111,7 +111,7 @@ def main():
         converted_herv_gtf_to_bed = get_data_path('hervs_genomic_coords.bed')
         logging.info(f"Using HERV BED file: {converted_herv_gtf_to_bed}")
         outbed_pathname = read_filter.get_path(
-            'final', f'{base_name}_{unique_id}_multimap_', 'bed')
+            'final', f'{base_name}_{unique_id}_multimap', 'bed')
         # Bedtools intersect with HERV GTF file (Multimap)
         subset_outsam_pathname = read_filter.get_path(
             'intermediate_files', f'{base_name}_{unique_id}_hervs_subset', 'sam')
