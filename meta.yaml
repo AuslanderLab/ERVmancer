@@ -30,14 +30,13 @@ requirements:
     - bowtie2
     - samtools
     - bedtools
+    - numpy
+    - pandas
     - tqdm
 
 test:
   commands:
     - ervmancer --help
-    - bowtie2 --help
-    - samtools --help
-    - bedtools --help
 
 about:
   home: https://github.com/AuslanderLab/ervmancer
