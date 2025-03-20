@@ -36,8 +36,8 @@ def process_fastq_chunk(fastq_file, kept_reads):
 
 
 def extract_out_original_reads_by_subset(pathname_r1,
-                                         pathname_subset_sam_for_filtering,
-                                         pathname_extracted_reads,
+                                         pathname_subset_sam_for_filtering,  # sam file subset from step 5
+                                         pathname_extracted_reads,  # output path
                                          pathname_r2=''):
     """
     Extract out the original reads based on the subsetted sam file.
