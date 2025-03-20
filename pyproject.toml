@@ -28,4 +28,4 @@ include-package-data = true
 where = ["src"]
 
 [tool.setuptools.package-data]
-"ervmancer" = ["data/*.bed"]
+"ervmancer" = ["data/*.bed", "data/*.pkl", "data/*.pickle" ]

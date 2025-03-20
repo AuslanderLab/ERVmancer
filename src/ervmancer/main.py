@@ -7,7 +7,8 @@ import subprocess
 import pkg_resources
 from tqdm import tqdm
 from .preprocessing.filter_reads import ReadFilter
-from .preprocessing.subset_reads import process_fastq_chunk, extract_out_original_reads_by_subset
+from .preprocessing.subset_reads import extract_out_original_reads_by_subset
+from .kmer.process_kmer import extract_out_original_reads_by_subset
 import hashlib
 import random
 import string
@@ -189,6 +190,14 @@ def main():
                 subset_outsam_pathname,
                 pathname_extracted_reads
             )
+
+        # KMER STEP: Returns a dictionary of reads as keys and kmer assignment as values
+        read_to_kmer_assignment_dict = parse_fastq_run_kmer_return_dict(input_sam_pathname=pathname_extracted_reads,
+                                                                        kmer_herv_dict=kmer_herv_dict,
+                                                                        path_dict=herv_path_dict,
+                                                                        under_clade_dict=clades_under_dict,
+                                                                        kmer_size=31,
+                                                                        paired_end=paired_end)
         cleanup_intermediate_files(args.output_dir, args.keep_files)
 
     except Exception as e:
