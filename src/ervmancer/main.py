@@ -7,13 +7,13 @@ import subprocess
 import pkg_resources
 from tqdm import tqdm
 from .preprocessing.filter_reads import ReadFilter
-# from .preprocessing.subset_reads import *
+from .preprocessing.subset_reads import process_fastq_chunk, extract_out_original_reads_by_subset
 import hashlib
 import random
 import string
 
 
-def generate_random_hash(length=8):
+def generate_random_hash(length: int = 8):
     """Generate a random hash string for file naming."""
     # Create a random string
     random_str = ''.join(random.choices(
@@ -29,7 +29,7 @@ def get_unique_id():
     return generate_random_hash()
 
 
-def run_command(cmd):
+def run_command(cmd: str):
     try:
         subprocess.run(cmd, shell=True, check=True)
     except subprocess.CalledProcessError as e:
@@ -37,7 +37,7 @@ def run_command(cmd):
         raise e
 
 
-def get_data_path(filename):
+def get_data_path(filename: str):
     """Get the path to a data file included in the package."""
     try:
         # Installed package - ERVmancer
@@ -45,6 +45,28 @@ def get_data_path(filename):
     except (ImportError, ModuleNotFoundError):
         # Developer Mode
         return os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', filename)
+
+
+def cleanup_intermediate_files(output_pathname: str, keep_intermediate: bool):
+    # Cleanup files.
+    cleanup_dir = os.path.join(output_pathname, 'intermediate_files')
+    if not keep_intermediate:
+        logging.info("Cleaning up intermediate files...")
+        if os.path.exists(cleanup_dir):
+            for filename in os.listdir(cleanup_dir):
+                file_path = os.path.join(cleanup_dir, filename)
+                try:
+                    if os.path.isfile(file_path):
+                        os.remove(file_path)
+                        logging.debug(
+                            f"Removed intermediate file: {file_path}")
+                except Exception as e:
+                    logging.error(f"Error removing {file_path}: {e}")
+            logging.info(f"Cleanup of {cleanup_dir} complete")
+        else:
+            logging.warning(
+                f"Cleanup directory {cleanup_dir} does not exist or is not a directory")
+    logging.info("Processing complete!")
 
 
 def main():
@@ -114,10 +136,10 @@ def main():
             'final', f'{base_name}_{unique_id}_multimap', 'bed')
         # Bedtools intersect with HERV GTF file (Multimap)
         subset_outsam_pathname = read_filter.get_path(
-            'intermediate_files', f'{base_name}_{unique_id}_hervs_subset', 'sam')
+            'final', f'{base_name}_{unique_id}_hervs_subset', 'sam')
         # Filter unique read appearances (step for KMER)
         subset_outbam_pathname = read_filter.get_path(
-            'final', f'{base_name}_{unique_id}_all_hervs.bwa_read', 'bam')
+            'intermediate_files', f'{base_name}_{unique_id}_all_hervs.bwa_read', 'bam')
 
         commands = [
             f"samtools view -bS {outsam_pathname} -o {outbam_pathname}",
@@ -125,8 +147,8 @@ def main():
             f"samtools index {sorted_outbam_pathname}",
             # Multimap uses this intermediate output below in the final dir
             f"bedtools intersect -abam {sorted_outbam_pathname} -b {converted_herv_gtf_to_bed} -wa -wb -bed > {outbed_pathname}",
-            # Kmer step uses this intermediate output in the final dir
             f"bedtools intersect -abam {sorted_outbam_pathname} -b {converted_herv_gtf_to_bed} > {subset_outbam_pathname}",
+            # Kmer step uses this intermediate output in the final dir
             f"samtools view -h -o {subset_outsam_pathname} {subset_outbam_pathname}"
         ]
         if not args.b:
@@ -150,24 +172,24 @@ def main():
             logging.info(f"Executing: {cmd}")
             run_command(cmd)
 
-        cleanup_dir = os.path.join(args.output_dir, 'intermediate_files')
-        if not args.keep_files:
-            logging.info("Cleaning up intermediate files...")
-            if os.path.exists(cleanup_dir):
-                for filename in os.listdir(cleanup_dir):
-                    file_path = os.path.join(cleanup_dir, filename)
-                    try:
-                        if os.path.isfile(file_path):
-                            os.remove(file_path)
-                            logging.debug(
-                                f"Removed intermediate file: {file_path}")
-                    except Exception as e:
-                        logging.error(f"Error removing {file_path}: {e}")
-                logging.info(f"Cleanup of {cleanup_dir} complete")
-            else:
-                logging.warning(
-                    f"Cleanup directory {cleanup_dir} does not exist or is not a directory")
-        logging.info("Processing complete!")
+        pathname_extracted_reads = read_filter.get_path(
+            'intermediate_files', f'{base_name}_{unique_id}_extracted_reads', 'txt')
+        # filter each read so that it appears once for KMER method
+        logging.info("Extracting original reads for kmer analysis...")
+        if paired:
+            extract_out_original_reads_by_subset(
+                read_filter.r1_path,
+                subset_outsam_pathname,
+                pathname_extracted_reads,
+                read_filter.r2_path
+            )
+        else:
+            extract_out_original_reads_by_subset(
+                read_filter.s1_path,
+                subset_outsam_pathname,
+                pathname_extracted_reads
+            )
+        cleanup_intermediate_files(args.output_dir, args.keep_files)
 
     except Exception as e:
         logging.error(f"An error occurred: {str(e)}")
