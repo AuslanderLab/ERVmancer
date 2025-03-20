@@ -1,4 +1,6 @@
 recursive-include src/ervmancer *.py
 recursive-include src/ervmancer/data *.bed
+recursive-include src/ervmancer/data *.pkl
+recursive-include src/ervmancer/data *.pickle
 include LICENSE
 include README.md
