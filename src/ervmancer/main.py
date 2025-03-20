@@ -2,16 +2,29 @@ import argparse
 import logging
 import os
 import sys
-import datetime
+import pickle
 import subprocess
 import pkg_resources
 from tqdm import tqdm
-from .preprocessing.filter_reads import ReadFilter
-from .preprocessing.subset_reads import extract_out_original_reads_by_subset
-from .kmer.process_kmer import extract_out_original_reads_by_subset
+from ervmancer.preprocessing.filter_reads import ReadFilter
+from ervmancer.preprocessing.subset_reads import extract_out_original_reads_by_subset
+from ervmancer.kmer.process_kmer import parse_fastq_run_kmer_return_dict
+from ervmancer.multimap.multimapped_sam import single_multimapped_sam_to_dictionary
+from ervmancer.resolve_reads.resolve_and_export import resolve_reads_single_sample_final, convert_final_dict_into_csv
 import hashlib
 import random
 import string
+
+
+def retrieve_pickled_python_obj(pathname):
+    '''
+    Gets a pickled python object at the path and name
+    :param pathname: the path and name to the matrix, make sure it has the .pickle at the end.
+    :return: whatever object is at the path and name location
+    '''
+    with open(pathname, "rb") as handle:
+        pickled_obj = pickle.load(handle)
+    return pickled_obj
 
 
 def generate_random_hash(length: int = 8):
@@ -142,6 +155,21 @@ def main():
         subset_outbam_pathname = read_filter.get_path(
             'intermediate_files', f'{base_name}_{unique_id}_all_hervs.bwa_read', 'bam')
 
+        # KMER PATHS
+        kmer_herv_dict_pathname = get_data_path(
+            'clean_kmer_31_60_percent_cutoff.pickle')
+        clades_under_dict_pathname = get_data_path(
+            'cleaned_clades_under_dict.pkl')
+        herv_path_dict_pathname = get_data_path('herv_path_dict.pkl')
+
+        kmer_herv_dict = retrieve_pickled_python_obj(kmer_herv_dict_pathname)
+        clades_under_dict = retrieve_pickled_python_obj(
+            clades_under_dict_pathname)
+        herv_path_dict = retrieve_pickled_python_obj(herv_path_dict_pathname)
+
+        final_csv_out = read_filter.get_path(
+            'final', f'{base_name}_{unique_id}_unified_run_final_out', 'csv')
+
         commands = [
             f"samtools view -bS {outsam_pathname} -o {outbam_pathname}",
             f"samtools sort -@ {args.num_cores} {outbam_pathname} -o {sorted_outbam_pathname}",
@@ -169,6 +197,7 @@ def main():
             commands.insert(0, bt_cmd)
 
         logging.info("Starting processing pipeline...")
+        logging.info(f"Running commands for file with hash: {unique_id}")
         for cmd in tqdm(commands, desc="Processing commands"):
             logging.info(f"Executing: {cmd}")
             run_command(cmd)
@@ -190,14 +219,46 @@ def main():
                 subset_outsam_pathname,
                 pathname_extracted_reads
             )
+        # filter each read so that it appears once for KMER method
+        logging.info("KMER Method - 31 bp")
+        if paired:
+            # KMER STEP: Returns a dictionary of reads as keys and kmer assignment as values
+            read_to_kmer_assignment_dict = parse_fastq_run_kmer_return_dict(input_sam_pathname=pathname_extracted_reads,
+                                                                            kmer_herv_dict=kmer_herv_dict,
+                                                                            path_dict=herv_path_dict,
+                                                                            under_clade_dict=clades_under_dict,
+                                                                            kmer_size=31,
+                                                                            paired_end=True)
+        else:
+            read_to_kmer_assignment_dict = parse_fastq_run_kmer_return_dict(input_sam_pathname=pathname_extracted_reads,
+                                                                            kmer_herv_dict=kmer_herv_dict,
+                                                                            path_dict=herv_path_dict,
+                                                                            under_clade_dict=clades_under_dict,
+                                                                            kmer_size=31,
+                                                                            paired_end=False)
 
-        # KMER STEP: Returns a dictionary of reads as keys and kmer assignment as values
-        read_to_kmer_assignment_dict = parse_fastq_run_kmer_return_dict(input_sam_pathname=pathname_extracted_reads,
-                                                                        kmer_herv_dict=kmer_herv_dict,
-                                                                        path_dict=herv_path_dict,
-                                                                        under_clade_dict=clades_under_dict,
-                                                                        kmer_size=31,
-                                                                        paired_end=paired_end)
+        logging.info("Multimap Method")
+
+        read_to_multimap_assignment_dict = single_multimapped_sam_to_dictionary(input_bed_pathname=outbed_pathname,
+                                                                                path_dict=herv_path_dict)
+
+        # resolve the differences between the kmer and the multimapping approaches.
+        final_resolved_dict = resolve_reads_single_sample_final(kmer_dict=read_to_kmer_assignment_dict,
+                                                                multi_dict=read_to_multimap_assignment_dict,
+                                                                clade_dict=clades_under_dict)
+        logging.info("Converting final dictionary into CSV")
+        if paired:
+            convert_final_dict_into_csv(original_fastq_pathname_for_normalization=args.r1,
+                                        resolved_dict=final_resolved_dict,
+                                        clade_dict=clades_under_dict,
+                                        herv_path_dict=herv_path_dict)
+        else:
+            convert_final_dict_into_csv(original_fastq_pathname_for_normalization=args.s1,
+                                        resolved_dict=final_resolved_dict,
+                                        clade_dict=clades_under_dict,
+                                        herv_path_dict=herv_path_dict,
+                                        output_path=final_csv_out)
+
         cleanup_intermediate_files(args.output_dir, args.keep_files)
 
     except Exception as e:
