@@ -6,8 +6,8 @@ def single_multimapped_sam_to_dictionary(input_bed_pathname, path_dict):
     Takes in a multimapped sam file from bowtie2 and calculates the LCA for each read
     This version has been updated to take in the bed file of HERV mapped reads, and can only make the dictionaries.
     It doesn't matter if it is paired end or single end in this step.
-    :param input_bed_pathname: the intersected bed file.
-    :param path_dict: a dictionary of hervs as keys and path back to the 'root' as values, for use in the function determine_lowest_common_clade_final.
+    :param input_bed_pathname: the intersected bed file.al
+    :param path_dict: a dictionary of hervs as keys and path back to the 'root' as values, for use in the function determine_lowest_common_clade.
     '''
 
     in_sam = open(input_bed_pathname, 'r')
