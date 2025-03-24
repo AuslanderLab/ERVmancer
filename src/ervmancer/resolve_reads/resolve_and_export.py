@@ -90,7 +90,7 @@ def get_original_fastq_norm_factor(original_fastq_for_normalization):
     return norm_factor
 
 
-def convert_final_dict_into_csv(original_fastq_pathname_for_normalization, resolved_dict, clade_dict, herv_path_dict, out_csv):
+def convert_final_dict_into_csv(original_fastq_pathname_for_normalization, resolved_dict, clade_dict, herv_path_dict, output_path):
     '''
     Converts the output of resolve_reads_single_sample_final into a single csv file.
     '''
