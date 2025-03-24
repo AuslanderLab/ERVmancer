@@ -137,7 +137,7 @@ def convert_final_dict_into_csv(original_fastq_pathname_for_normalization, resol
         summed_only_dict, final_df, 'summed_read_counts')
 
     final_df = final_df.set_index('sample')
-    final_df.to_csv(out_csv)
+    final_df.to_csv(output_path)
 
 
 def resolve_reads_single_sample_final(kmer_dict, multi_dict, clade_dict):
