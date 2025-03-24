@@ -199,7 +199,7 @@ def main():
         logging.info("Starting processing pipeline...")
         logging.info(f"Running commands for file with hash: {unique_id}")
         for cmd in tqdm(commands, desc="Processing commands"):
-            logging.info(f"Executing: {cmd}")
+            logging.info(f"\nExecuting: {cmd}")
             run_command(cmd)
 
         pathname_extracted_reads = read_filter.get_path(
@@ -251,7 +251,8 @@ def main():
             convert_final_dict_into_csv(original_fastq_pathname_for_normalization=args.r1,
                                         resolved_dict=final_resolved_dict,
                                         clade_dict=clades_under_dict,
-                                        herv_path_dict=herv_path_dict)
+                                        herv_path_dict=herv_path_dict,
+                                        output_path=final_csv_out)
         else:
             convert_final_dict_into_csv(original_fastq_pathname_for_normalization=args.s1,
                                         resolved_dict=final_resolved_dict,
