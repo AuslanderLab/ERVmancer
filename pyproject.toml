@@ -7,9 +7,12 @@ name = "ervmancer"
 version = "0.1.0"
 description = "ERV identification tool using bowtie2, samtools, and bedtools"
 readme = "README.md"
-requires-python = ">=3.6"
+requires-python = ">=3.8"
 dependencies = [
     "tqdm",
+    "numpy",
+    "pandas",
+    "regex"
 ]
 license = {text = "MIT"}
 authors = [
