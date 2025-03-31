@@ -87,7 +87,9 @@ def cleanup_intermediate_files(output_pathname: str, keep_intermediate: bool):
 def main():
     parser = argparse.ArgumentParser(description='ervmancer')
     parser.add_argument('--b', type=str, required=False,
-                        help="User provided absolute path to self provided bowtie2 alignment file")
+                        help="User provided absolute path to self provided bowtie2 alignment file.")
+    parser.add_argument('--advanced', type=str, required=False,
+                        help="User provided absolute path to CSV file with user-provided read counts from other methods.")
     parser.add_argument('--r1', required=False,
                         help='Absolute path to paired-end R1 fastq file.')
     parser.add_argument('--r2', required=False,
@@ -107,6 +109,33 @@ def main():
 
     logging.basicConfig(level=logging.INFO,
                         format='%(asctime)s - %(levelname)s - %(message)s', force=True)
+
+    # PROVIDED DICTIONARIES
+    kmer_herv_dict_pathname = get_data_path(
+        'clean_kmer_31_60_percent_cutoff.pickle')
+    clades_under_dict_pathname = get_data_path(
+        'cleaned_clades_under_dict.pkl')
+    herv_path_dict_pathname = get_data_path('herv_path_dict.pkl')
+
+    kmer_herv_dict = retrieve_pickled_python_obj(kmer_herv_dict_pathname)
+    clades_under_dict = retrieve_pickled_python_obj(clades_under_dict_pathname)
+    herv_path_dict = retrieve_pickled_python_obj(herv_path_dict_pathname)
+
+    final_csv_out = read_filter.get_path(
+        'final', f'{base_name}_{unique_id}_unified_run_final_out', 'csv')
+
+    # ENTRYPOINT THREE - USER PROVIDED READS (FROM OTHER METHODS)
+    if os.path.isabs(args.advanced) and os.path.exists(args.advanced) and os.path.isfile(args.advanced):
+        # if the given absolute path is valid/exists
+        logging.info(f"Assigning tree for given CSV file: {args.advanced}")
+        assign_tree_for_other_methods(
+            args.advanced, final_csv_out, clades_under_dict, herv_path_dict)
+        logging.info(
+            f"Assigning reads to tree for {args.advanced} and exporting output complete! Terminating program.")
+        sys.exit()
+    else:
+        logging.error(
+            "Invalid Path - please provide absolute path to CSV file.")
 
     try:
         # Create output directories
@@ -148,28 +177,13 @@ def main():
         converted_herv_gtf_to_bed = get_data_path('hervs_genomic_coords.bed')
         logging.info(f"Using HERV BED file: {converted_herv_gtf_to_bed}")
         outbed_pathname = read_filter.get_path(
-            'final', f'{base_name}_{unique_id}_multimap', 'bed')
+            'intermediate_files', f'{base_name}_{unique_id}_multimap', 'bed')
         # Bedtools intersect with HERV GTF file (Multimap)
         subset_outsam_pathname = read_filter.get_path(
-            'final', f'{base_name}_{unique_id}_hervs_subset', 'sam')
+            'intermediate_files', f'{base_name}_{unique_id}_hervs_subset', 'sam')
         # Filter unique read appearances (step for KMER)
         subset_outbam_pathname = read_filter.get_path(
             'intermediate_files', f'{base_name}_{unique_id}_all_hervs.bwa_read', 'bam')
-
-        # KMER PATHS
-        kmer_herv_dict_pathname = get_data_path(
-            'clean_kmer_31_60_percent_cutoff.pickle')
-        clades_under_dict_pathname = get_data_path(
-            'cleaned_clades_under_dict.pkl')
-        herv_path_dict_pathname = get_data_path('herv_path_dict.pkl')
-
-        kmer_herv_dict = retrieve_pickled_python_obj(kmer_herv_dict_pathname)
-        clades_under_dict = retrieve_pickled_python_obj(
-            clades_under_dict_pathname)
-        herv_path_dict = retrieve_pickled_python_obj(herv_path_dict_pathname)
-
-        final_csv_out = read_filter.get_path(
-            'final', f'{base_name}_{unique_id}_unified_run_final_out', 'csv')
 
         commands = [
             f"samtools view -bS {outsam_pathname} -o {outbam_pathname}",
