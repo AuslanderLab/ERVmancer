@@ -11,6 +11,7 @@ from ervmancer.preprocessing.subset_reads import extract_out_original_reads_by_s
 from ervmancer.kmer.process_kmer import parse_fastq_run_kmer_return_dict
 from ervmancer.multimap.multimapped_sam import single_multimapped_sam_to_dictionary
 from ervmancer.resolve_reads.resolve_and_export import resolve_reads_single_sample_final, convert_final_dict_into_csv
+from ervmancer.resolve_reads.other_methods import assign_tree_for_other_methods
 import hashlib
 import random
 import string
