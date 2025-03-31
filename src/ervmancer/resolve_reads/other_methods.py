@@ -3,8 +3,6 @@
 
 # imports---------------------------------------------------
 import pandas as pd
-import numpy as np
-import pickle  # only for data retrieval for the dictionaries
 
 # Data prep-------------------------------------------------
 # This is for Bryant to understand what dictionaries are needed for this function
