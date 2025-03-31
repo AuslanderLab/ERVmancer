@@ -74,8 +74,8 @@ def extract_out_original_reads_by_subset(pathname_r1,
                         process_fastq_chunk(in_r2, only_keep_these_reads)):
                     out_file.write(f"{r1_id}\t{r1_seq}")
                     out_file.write(f"{r2_id}\t{r2_seq}")
-        # Handle single-end reads
+        # Handle single-end readss
         else:
             with open_file(pathname_r1) as in_r1:
-                for read_id, seq in process_fastq_chunk(in_r1):
+                for read_id, seq in process_fastq_chunk(in_r1, only_keep_these_reads):
                     out_file.write(f"{read_id}\t{seq}")
