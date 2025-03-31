@@ -137,8 +137,12 @@ def main():
         logging.error(
             "Invalid Path - please provide absolute path to CSV file.")
 
+    if not os.path.exists(args.bowtie_index):
+        logging.error("Bowtie index path does not exist or is invalid.")
+        sys.exit()
+
     try:
-        # Create output directories
+        # Create output directories if they do not exist
         for subdir in ['intermediate_files', 'final', 'logs']:
             os.makedirs(os.path.join(args.output_dir, subdir), exist_ok=True)
 
