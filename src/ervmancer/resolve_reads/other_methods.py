@@ -4,26 +4,6 @@
 # imports---------------------------------------------------
 import pandas as pd
 
-# Data prep-------------------------------------------------
-# This is for Bryant to understand what dictionaries are needed for this function
-
-
-def retrieve_pickled_python_obj(pathname):
-    '''
-    Gets a pickled python object at the path and name
-    :param pathname: the path and name to the matrix, make sure it has the .pickle at the end.
-    :return: whatever object is at the path and name location
-    '''
-    with open(pathname, "rb") as handle:
-        pickled_obj = pickle.load(handle)
-    return pickled_obj
-
-
-herv_path_dict = retrieve_pickled_python_obj(
-    '../probability_distribution_work/cleaned_dictionaries/cleaned_herv_path_dict.pkl')
-clade_under_dict = retrieve_pickled_python_obj(
-    '../probability_distribution_work/cleaned_dictionaries/cleaned_clades_under_dict.pkl')
-
 # Function---------------------------------------------------------------------
 
 

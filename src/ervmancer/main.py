@@ -90,7 +90,7 @@ def main():
                         help="User provided absolute path to self provided bowtie2 alignment file.")
     parser.add_argument('--advanced', type=str, required=False,
                         help="User provided absolute path to CSV file with user-provided read counts from other methods.")
-    parser.add_argument('--r1', required=True,
+    parser.add_argument('--r1', required=False,
                         help='Absolute path to paired-end R1 fastq file. A file is also needed for normalization')
     parser.add_argument('--r2', required=False,
                         help='Absolute path to paired-end R2 fastq file.')
