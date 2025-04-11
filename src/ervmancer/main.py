@@ -121,6 +121,7 @@ def main():
     clades_under_dict = retrieve_pickled_python_obj(clades_under_dict_pathname)
     herv_path_dict = retrieve_pickled_python_obj(herv_path_dict_pathname)
 
+    read_filter = ReadFilter(args.output_dir, args.r1, args.r2, args.s1)
     final_csv_out = read_filter.get_path(
         'final', f'{base_name}_{unique_id}_unified_run_final_out', 'csv')
 
@@ -149,7 +150,6 @@ def main():
         for subdir in ['intermediate_files', 'final', 'logs']:
             os.makedirs(os.path.join(args.output_dir, subdir), exist_ok=True)
 
-        read_filter = ReadFilter(args.output_dir, args.r1, args.r2, args.s1)
         base_name, paired = read_filter.validate_inputs()
         logging.info(f'Base Name: {base_name}')
 
