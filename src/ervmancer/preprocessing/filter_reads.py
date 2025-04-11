@@ -58,9 +58,6 @@ class ReadFilter:
             self.paired = False
             self.s1_path = self.validator.validate_input_file(s1_path)
             self.base_name = self._get_base_name(s1_path)
-        else:
-            raise ValueError(
-                "Either provide both R1 and R2 for paired-end reads, or S1 for single-end reads")
 
     def _get_base_name(self, filepath: str) -> str:
         base_name = os.path.splitext(os.path.basename(filepath))[0]
