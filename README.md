@@ -18,7 +18,7 @@ conda install -c bioconda ervmancer
 
 From the Conda Docs, the most straightforward way to do this is to first install Anaconda, then use conda through CLI to install conda-build and Git.
 
-```conda create -n <environment_name> python=3.8
+```conda create -n <environment_name> python=3.8```
 ```conda install -n <environment_name> conda-build git conda-verify```
 
 The bowtie2 indices used 
