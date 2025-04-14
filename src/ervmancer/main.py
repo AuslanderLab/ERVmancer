@@ -121,25 +121,34 @@ def main():
     clades_under_dict = retrieve_pickled_python_obj(clades_under_dict_pathname)
     herv_path_dict = retrieve_pickled_python_obj(herv_path_dict_pathname)
 
-    read_filter = ReadFilter(args.output_dir, args.r1, args.r2, args.s1)
+    read_filter = ReadFilter(args.output_dir, args.r1,
+                             args.r2, args.s1, args.advanced)
+    base_name, paired = read_filter.validate_inputs()
+    logging.info(f'Base Name: {base_name}')
+
+    os.makedirs(os.path.join(args.output_dir,
+                             "intermediate_files"), exist_ok=True)
+    unique_id = get_unique_id()
+
     final_csv_out = read_filter.get_path(
         'final', f'{base_name}_{unique_id}_unified_run_final_out', 'csv')
 
-    # ENTRYPOINT THREE - USER PROVIDED READS (FROM OTHER METHODS)
-    if os.path.isabs(args.advanced) and os.path.exists(args.advanced) and os.path.isfile(args.advanced):
-        # if the given absolute path is valid/exists
-        logging.info(f"Assigning tree for given CSV file: {args.advanced}")
-        assign_tree_for_other_methods(
-            args.advanced, final_csv_out, clades_under_dict, herv_path_dict)
-        logging.info(
-            f"Assigning reads to tree for {args.advanced} and exporting output complete! Terminating program.")
-        sys.exit(1)
-    else:
-        logging.error(
-            "Invalid Path - please provide absolute path to CSV file.")
+    if args.advanced and not ((args.r1 and args.r2) or args.s1):
+        # ENTRYPOINT THREE - USER PROVIDED READS (FROM OTHER METHODS)
+        if os.path.isabs(args.advanced) and os.path.exists(args.advanced) and os.path.isfile(args.advanced):
+            # if the given absolute path is valid/exists
+            logging.info(f"Assigning tree for given CSV file: {args.advanced}")
+            assign_tree_for_other_methods(
+                args.advanced, final_csv_out, clades_under_dict, herv_path_dict)
+            logging.info(
+                f"Assigning reads to tree for {args.advanced} and exporting output complete! Terminating program.")
+            sys.exit(1)
+        else:
+            logging.error(
+                "Invalid Path - please provide absolute path to CSV file.")
 
     # ENTRYPOINT ONE - Check if bowtie2 index is provided if bowtie2 needs to be run
-    if not args.b and not os.path.exists(args.bowtie_index):
+    if not args.b and os.path.exists(args.bowtie_index):
         # If we are not using the Bowtie2 entrypoint, we need to provide the bowtie2 index to run bowtie2.
         logging.error(
             "Bowtie index path does not exist or is invalid. Please provide bowtie2 index file.")
@@ -149,13 +158,6 @@ def main():
         # Create output directories if they do not exist
         for subdir in ['intermediate_files', 'final', 'logs']:
             os.makedirs(os.path.join(args.output_dir, subdir), exist_ok=True)
-
-        base_name, paired = read_filter.validate_inputs()
-        logging.info(f'Base Name: {base_name}')
-
-        os.makedirs(os.path.join(args.output_dir,
-                    "intermediate_files"), exist_ok=True)
-        unique_id = get_unique_id()
 
         if args.b:
             # ENTRYPOINT TWO - set paired boolean flag for normalization later and absolute path to sam file.
