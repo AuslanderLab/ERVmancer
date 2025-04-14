@@ -45,10 +45,14 @@ class FastqValidator:
 
 class ReadFilter:
     def __init__(self, output_dir: str, r1_path: Optional[str] = None,
-                 r2_path: Optional[str] = None, s1_path: Optional[str] = None):
+                 r2_path: Optional[str] = None, s1_path: Optional[str] = None,
+                 csv_path: Optional[str] = None):
         self.output_dir = output_dir
         self.validator = FastqValidator()
+        self.paired = False
+        self.base_name = None
 
+        # Handle different input combinations
         if r1_path and r2_path:
             self.paired = True
             self.r1_path = self.validator.validate_input_file(r1_path)
@@ -58,10 +62,17 @@ class ReadFilter:
             self.paired = False
             self.s1_path = self.validator.validate_input_file(s1_path)
             self.base_name = self._get_base_name(s1_path)
+        elif csv_path:
+            self.paired = False
+            self.base_name = self._get_base_name(csv_path)
 
     def _get_base_name(self, filepath: str) -> str:
         base_name = os.path.splitext(os.path.basename(filepath))[0]
-        return base_name[:-6] if base_name.endswith('.fastq') else base_name
+        if base_name.endswith('.fastq'):
+            return base_name[:-6]
+        elif base_name.endswith('.csv'):
+            return base_name[:-4] if base_name.endswith('.csv') else base_name
+        return base_name
 
     def get_path(self, subdir: str, filename: str, ext: str) -> str:
         return os.path.join(self.output_dir, subdir, f"{filename}.{ext}")
