@@ -21,7 +21,7 @@ def retrieve_pickled_python_obj(pathname):
     '''
     Gets a pickled python object at the path and name
     :param pathname: the path and name to the matrix, make sure it has the .pickle at the end.
-    :return: whatever object is at the path and name location
+    :return: pickle object is at the path and name location
     '''
     with open(pathname, "rb") as handle:
         pickled_obj = pickle.load(handle)
@@ -62,7 +62,7 @@ def get_data_path(filename: str):
         return os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', filename)
 
 
-def cleanup_intermediate_files(output_pathname: str, keep_intermediate: bool):
+def cleanup_intermediate_files(unique_id: str, output_pathname: str, keep_intermediate: bool):
     # Cleanup files.
     cleanup_dir = os.path.join(output_pathname, 'intermediate_files')
     if not keep_intermediate:
@@ -71,7 +71,9 @@ def cleanup_intermediate_files(output_pathname: str, keep_intermediate: bool):
             for filename in os.listdir(cleanup_dir):
                 file_path = os.path.join(cleanup_dir, filename)
                 try:
-                    if os.path.isfile(file_path):
+                    if os.path.isfile(file_path) and unique_id in file_path:
+                        # if the files that were used in the generation of the final output exist with their hash, delete the file.
+                        # this is to prevent array jobs from erasing parallel job intermediate outputs.
                         os.remove(file_path)
                         logging.debug(
                             f"Removed intermediate file: {file_path}")
@@ -125,9 +127,9 @@ def main():
                              args.r2, args.s1, args.advanced)
     base_name, paired = read_filter.validate_inputs()
     logging.info(f'Base Name: {base_name}')
-
-    os.makedirs(os.path.join(args.output_dir,
-                             "intermediate_files"), exist_ok=True)
+    # Create output directories if they do not exist
+    for subdir in ['intermediate_files', 'final', 'logs']:
+        os.makedirs(os.path.join(args.output_dir, subdir), exist_ok=True)
     unique_id = get_unique_id()
 
     final_csv_out = read_filter.get_path(
@@ -155,10 +157,6 @@ def main():
         sys.exit(1)
 
     try:
-        # Create output directories if they do not exist
-        for subdir in ['intermediate_files', 'final', 'logs']:
-            os.makedirs(os.path.join(args.output_dir, subdir), exist_ok=True)
-
         if args.b:
             # ENTRYPOINT TWO - set paired boolean flag for normalization later and absolute path to sam file.
             try:
@@ -298,7 +296,7 @@ def main():
                                         herv_path_dict=herv_path_dict,
                                         output_path=final_csv_out)
 
-        cleanup_intermediate_files(args.output_dir, args.keep_files)
+        cleanup_intermediate_files(unique_id, args.output_dir, args.keep_files)
 
     except Exception as e:
         logging.error(f"An error occurred: {str(e)}")
