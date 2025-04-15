@@ -12,14 +12,10 @@ __pycache__/
 
 # user-defined files
 meta.yaml
-# Ignore files in output directory
-output/*.*
-# Ignore files in immediate subdirectories of output
-output/*/*.*
-# keep directories themselves
-!output/
+output/*
 !output/*/
-
+!output/.gitkeep
+!output/*/.gitkeep
 
 # C extensions
 *.so
