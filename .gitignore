@@ -11,6 +11,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# metadata yaml file for bioconda build
+meta.yaml
+
 # C extensions
 *.so
 
