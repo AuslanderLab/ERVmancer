@@ -1,9 +1,3 @@
-# Data files
-src/ervmancer/data/clean_kmer_31_60_percent_cutoff.pickle
-src/ervmancer/data/cleaned_clades_under_dict.pkl
-src/ervmancer/data/herv_path_dict.pkl
-src/ervmancer/data/hervs_genomic_coords.bed
-
 #Byte-compiled / optimized / DLL files
 **/.DS_Store
 __pycache__/
