@@ -1,3 +1,6 @@
+# Data files
+src/ervmancer/data/*
+
 #Byte-compiled / optimized / DLL files
 **/.DS_Store
 __pycache__/
