@@ -17,19 +17,29 @@ import random
 import string
 
 
-def retrieve_pickled_python_obj(pathname):
-    '''
-    Gets a pickled python object at the path and name
-    :param pathname: the path and name to the matrix, make sure it has the .pickle at the end.
-    :return: pickle object is at the path and name location
-    '''
+def retrieve_pickled_python_obj(pathname: str):
+    """Gets a pickled python object at the path and name.
+
+    Args:
+        pathname (str): the path and name to the matrix, make sure it has the .pickle at the end.
+
+    Returns:
+        pickle object at the designated path
+    """
     with open(pathname, "rb") as handle:
         pickled_obj = pickle.load(handle)
     return pickled_obj
 
 
 def generate_random_hash(length: int = 8):
-    """Generate a random hash string for file naming."""
+    """Generates a random string to hash using md5 encoding/hashing
+
+    Args:
+        length (int, optional): Length of desired hash. Defaults to 8.
+
+    Returns:
+        _type_: _description_
+    """
     # Create a random string
     random_str = ''.join(random.choices(
         string.ascii_lowercase + string.digits, k=16))
@@ -40,11 +50,23 @@ def generate_random_hash(length: int = 8):
 
 
 def get_unique_id():
-    """Generate a unique ID for file naming."""
+    """Wrapper function to generate a unique ID hash
+
+    Returns:
+        str: random hash string with size @length
+    """
     return generate_random_hash()
 
 
 def run_command(cmd: str):
+    """Runs command using subprocess function
+
+    Args:
+        cmd (str): desired command to run
+
+    Raises:
+        e: An error if the command exits with any failure exit codes
+    """
     try:
         subprocess.run(cmd, shell=True, check=True)
     except subprocess.CalledProcessError as e:
@@ -52,24 +74,50 @@ def run_command(cmd: str):
         raise e
 
 
-def get_data_path(filename: str):
-    """Get the path to a data file included in the package."""
+def get_data_path(filename: str, subdir: str = None):
+    """Uses pkg_resources to find data paths in src/ervmancer/data
+
+    Args:
+        filename (str): filename of desired data object in data
+        subdir (_type_, optional): subdirectory for specific path joining if subdir in data. Defaults to None.
+
+    Returns:
+        str: absolute path to data module's desired file for usage in main method
+    """
     try:
-        # Installed package - ERVmancer
-        return pkg_resources.resource_filename('ervmancer', os.path.join('data', filename))
+        # pkg_resources for installed package
+        data_path = 'data'
+        if subdir:
+            data_path = os.path.join(data_path, subdir)
+        return pkg_resources.resource_filename('ervmancer', os.path.join(data_path, filename))
     except (ImportError, ModuleNotFoundError):
-        # Developer Mode
-        return os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', filename)
+        # dev mode - relative path
+        base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        if subdir:
+            return os.path.join(base_path, 'data', subdir, filename)
+        return os.path.join(base_path, 'data', filename)
 
 
 def get_default_bowtie_index():
-    """Get the path to the default bowtie index included in the package."""
-    # Return the path without the file extension as bowtie2 requires
+    """Wrapper function to get the default bowtie index
+
+    Returns:
+        str: Absolute path to the GRCh38_noalt_as indices for bowtie2.
+    """
+    # Get the directory containing the bowtie2 index files
     index_dir = get_data_path('', subdir='GRCh38_noalt_as')
+    # Return the index prefix (without any file extensions)
     return os.path.join(index_dir, 'GRCh38_noalt_as')
 
 
 def cleanup_intermediate_files(unique_id: str, output_pathname: str, keep_intermediate: bool):
+    """Removes intermediate files that belong to the specific process run/command of ervmancer using the unique hash.
+
+    Args:
+        unique_id (str): a length n hash that is used to differentiate between files and runs appended to the basename
+        output_pathname (str): absolute path for the output base directory
+        keep_intermediate (bool): flag to decide whether or not end user wishes to keep intermediate processing files
+    """
     # Cleanup files.
     cleanup_dir = os.path.join(output_pathname, 'intermediate_files')
     if not keep_intermediate:
@@ -115,13 +163,12 @@ def main():
                         help="Absolute path to the Bowtie2 index to be used for processing. If not provided, uses the built-in GRCh38_noalt_as index.")
 
     args = parser.parse_args()
-
     logging.basicConfig(level=logging.INFO,
                         format='%(asctime)s - %(levelname)s - %(message)s', force=True)
 
     # PROVIDED DICTIONARIES
     kmer_herv_dict_pathname = get_data_path(
-        'clean_kmer_31_60_percent_cutoff.pickle')
+        'clean_kmer_31_60_percent_cutoff.pkl')
     clades_under_dict_pathname = get_data_path(
         'cleaned_clades_under_dict.pkl')
     herv_path_dict_pathname = get_data_path('herv_path_dict.pkl')
@@ -176,7 +223,7 @@ def main():
                     "Provided Bowtie index is incomplete. All six index files (.1.bt2, .2.bt2, .3.bt2, .4.bt2, .rev.1.bt2, .rev.2.bt2) or their large index equivalent should exist.")
                 sys.exit(1)
         else:
-            # Use default index 
+            # Use default index
             args.bowtie_index = get_default_bowtie_index()
             logging.info(
                 f"Using built-in GRCh38_noalt_as bowtie2 index: {args.bowtie_index}")

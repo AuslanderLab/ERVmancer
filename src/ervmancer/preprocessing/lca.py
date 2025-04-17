@@ -1,11 +1,20 @@
 import numpy as np
 
 
-def determine_lowest_common_clade(virus_list, path_dict):
+def determine_lowest_common_clade(virus_list: list, path_dict: dict):
+    """Given a list of viruses and a dictionary with viruses as keys and the path back to the "root" as values
+       Determines the lowest common clade of those viruses, or returns that virus if there is only one virus
+       This version uses the list method, but with an additional step to always use the shortest list
+
+    Args:
+        virus_list (_type_): _description_
+        path_dict (_type_): _description_
+
+    Returns:
+        str: the LCA for a given path to root.
+    """
     '''
-    Given a list of viruses and a dictionary with viruses as keys and the path back to the "root" as values
-    Determines the lowest common clade of those viruses, or returns that virus if there is only one virus
-    This version uses the list method, but with an additional step to always use the shortest list
+
     :param virus_list: a list of the viruses a read could have potentially come frome.
     :param path_dict: a dictionary with viruses as keys and the path back to root as values.
     '''

@@ -2,11 +2,12 @@ import gzip
 from itertools import zip_longest
 
 
-def open_file(filename):
-    '''
-    from chatGPT, for opening the original file names
-    Specifically, this allows handling either gz or normal files
-    '''
+def open_file(filename: str):
+    """Opening a file for either gunzipped or normal flat files.
+
+    Args:
+        filename (str): Absolute filename/path
+    """
     # Check if the file is gzipped based on the extension
     if filename.endswith('.gz'):
         # Open the file with gzip if it is gzipped
@@ -17,7 +18,12 @@ def open_file(filename):
 
 
 def process_fastq_chunk(fastq_file, kept_reads):
-    """Process FASTQ file in chunks of 4 lines and yield ID and sequence."""
+    """Process FASTQ file in chunks of 4 lines and yield ID and sequence.
+
+    Args:
+        fastq_file (File) - a file object with lines to ingest.
+        kept_reads (sequence) - list of known reads to compare to for yielding generator.
+    """
     while True:
         id_line = fastq_file.readline()
         if not id_line:

@@ -3,12 +3,19 @@ import regex as re
 import subprocess
 
 
-def append_dict_to_df(new_dict, df, name_of_sample):
-    '''
-    Takes a dictionary and a dataframe, and appends the dictionary values as row entries using the keys as columns
-    df should already have the column names
-    name of sample will be appended to the last entry, for use as index at the end
-    '''
+def append_dict_to_df(new_dict: dict, df: pd.DataFrame, name_of_sample: str):
+    """Takes a dictionary and a dataframe, and appends the dictionary values as row entries using the keys as columns.
+        Dataframe should already have existing column names.
+        Name of sample is appended to last entry for index at the end.
+
+    Args:
+        new_dict (dict)
+        df (pd.DataFrame)
+        name_of_sample (str)
+
+    Returns:
+        pd.DataFrame: Concatenated DataFrame with dictionary values.
+    """
     key_list = list(new_dict.keys())
     val_list = list(new_dict.values())
 

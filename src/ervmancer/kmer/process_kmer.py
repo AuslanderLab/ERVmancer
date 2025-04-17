@@ -1,20 +1,23 @@
 from ervmancer.preprocessing.lca import determine_lowest_common_clade
+from typing import Tuple, Optional
 
 
-def identify_sequence_herv_barcode(sequence, kmer_herv_dict, kmer_size=31):
-    '''
-    Takes in a sequence, breaks it into kmers, for each kmer it extracts out the viruses that kmer could belong to, and then exports the intersection of those kmer virus lists
-    :param sequence: The sequence to assign to the viruses.
-    :param kmer_herv_dict: a dictionary of kmers as keys and HERVs that kmer could belong to as a list
-    :param kmer_size: the size of the kmers used in the kmer_herv_dict
-    '''
+def identify_sequence_herv_barcode(sequence, kmer_herv_dict: dict, kmer_size: int = 31) -> Tuple[list, list]:
+    """ Takes in a sequence, breaks it into kmers, for each kmer it extracts out the viruses that kmer could belong to.
+        then exports the intersection of those kmer virus lists.
+
+    Args:
+        sequence (str): The sequence to assign to the viruses.
+        kmer_herv_dict (dict): a dictionary of kmers as keys and HERVs that kmer could belong to as a list
+        kmer_size (int, optional): _description_. Defaults to 31.
+
+    Returns:
+        Tuple[list, list]: kmer list originated from viruses in the potential candidate pool
+    """
     # Cut up the sequence into a list of kmers.
     seq_kmers = chop_sequence_into_kmers(str(sequence), kmer_size=kmer_size)
 
     all_potential_viruses = []
-
-    # counter = 0
-
     kmers_used = []
 
     for sk in seq_kmers:  # for each sequence, we check if it is in the kmer dictionary. If it is, we append that list to the growing list of potential HERVs.
@@ -23,7 +26,7 @@ def identify_sequence_herv_barcode(sequence, kmer_herv_dict, kmer_size=31):
             all_potential_viruses.append(kmer_herv_dict[sk])
             kmers_used.append(sk)
 
-    # if its empty, we just need to return an emtpy list
+    # if its empty, we just need to return an empty list
     if not all_potential_viruses:
         return all_potential_viruses, kmers_used
 
@@ -38,13 +41,16 @@ def identify_sequence_herv_barcode(sequence, kmer_herv_dict, kmer_size=31):
         return list(set().union(*all_potential_viruses)), kmers_used
 
 
-def chop_sequence_into_kmers(seq, kmer_size=31):
-    '''
-    Cuts up the sequence into kmers of the specified length
-    :param seq: a string of a dna sequence.
-    :param kmer_size: int, the size of the final kmers.
-    :return: a list of overlapping kmers of size kmer_size covering the original sequence.
-    '''
+def chop_sequence_into_kmers(seq: str, kmer_size: int = 31) -> list:
+    """Cuts up the sequence into kmers of the specified length
+
+    Args:
+        seq (str): a string of a dna sequence.
+        kmer_size (int, optional): the size of the final kmers. Defaults to 31.
+
+    Returns:
+        list: a list of overlapping kmers of size kmer_size covering the original sequence.
+    """
     seq_len = len(seq)
 
     output_list = []
@@ -57,22 +63,20 @@ def chop_sequence_into_kmers(seq, kmer_size=31):
     return output_list
 
 
-def parse_fastq_run_kmer_return_dict(input_sam_pathname, kmer_herv_dict, path_dict, under_clade_dict, kmer_size=31, paired_end=False):
-    '''
-    Goes over every line in a fasta file, for each sequence identifies the potential hervs it could come from, and then exports the list of assignments to a separate file
-    :param input_fastq_pathname: the path and name of the fastq file to analyze
-    :param kmer_herv_dict: a dictionary of kmers as keys and the hervs which have that kmer as values
-    :param path_dict: a dictionary of the herv as keys and the paths back to the "root" as values
-    :param under_clade_dict: a dictionary of clade (lca, branchpoint) as keys and a list of the clades and viruses under that clade as values
-    :param original_fastq_pathname_for_normalization: the path and name to the original fastq file (R1 or R2, only need one). This will be used to count the number of lines to determine the normalization factor. Can take gz or normal fastq files.
-    :param optional_seq_assignment_filename: a string, optional path and name of a file which will contain the sequence ID, the Sequence, the HERV identities, and the LCA assignment (four lines for every read which was contained a herv kmer) 
-    :param kmer_size: the size of the kmer in the kmer_herv_dict
-    :return everything_under_clade_dict: a dictionary with clade as keys and values as the number of reads which were at or below that clade
-    :return out_lca_dict: a dictionary with clade as keys and values as the number of reads DIRECTLY assigned to that LCA (use everything_under_clade_dict if you want to see everything assigned to or UNDER/WITHIN an LCA clade)
-    '''
-    # if optional_seq_assignment_filename: #Option to save the seq assignments to a separate file
-    #     out_file = open(optional_seq_assignment_filename, 'w')
+def parse_fastq_run_kmer_return_dict(input_sam_pathname: str, kmer_herv_dict: dict, path_dict: dict, kmer_size: int = 31, paired_end: bool = False) -> dict:
+    """Goes over every line in a fasta file, for each sequence identifies the potential hervs it could come from.
+       Then, exports the list of assignments to a separate file.
 
+    Args:
+        input_sam_pathname (str): The path and name of the fastq file to analyze
+        kmer_herv_dict (dict): A dictionary of kmers as keys and the hervs which have that kmer as values
+        path_dict (dict): A dictionary of the herv as keys and the paths back to the "root" as values
+        kmer_size (int, optional): The size of the kmer in the kmer_herv_dict. Defaults to 31.
+        paired_end (bool, optional): Flag to determine whether to process it as a paired read or single strand file. Defaults to False.
+
+    Returns:
+        out_id_to_assignment_dict: a dictionary with clade as keys and values as the number of reads DIRECTLY assigned to that LCA (use everything_under_clade_dict if you want to see everything assigned to or UNDER/WITHIN an LCA clade)
+    """
     # open (text output from previous method)
     in_file = open(input_sam_pathname, 'r')
 

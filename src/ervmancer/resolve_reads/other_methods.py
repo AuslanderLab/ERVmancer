@@ -7,15 +7,18 @@ import pandas as pd
 # Function---------------------------------------------------------------------
 
 
-def assign_tree_for_other_methods(path_to_other_csv, path_for_output_csv, clade_under_dict, herv_path_dict):
-    '''
-    Assigns the other methods to our tree
-    :param path_to_other_df: the path to the df of read counts from another method. The format MUST conform to the readme format.
-    :param path_for_output_csv: the path where the output csv will be exported.
-    :param clade_under_dict: a dictionary with clade as keys and the clade or hervs under that clade as a list. Will be provided to the end user automatically.
-    :param herv_path_dict: a dictionary with hervs as keys and the path back to the root as a list as values. Will be provided to the end user automatically.
-    :return: a dataframe of the other method with all clades in addition to the ERV leaves.
-    '''
+def assign_tree_for_other_methods(path_to_other_csv: str, path_for_output_csv: str, clade_under_dict: dict, herv_path_dict: dict):
+    """Assigns the other methods to our tree.
+
+    Args:
+        path_to_other_df (str): the path to the df of read counts from another method. The format MUST conform to the readme format.
+        path_for_output_csv (str): the path where the output csv will be exported.
+        clade_under_dict (dict): a dictionary with clade as keys and the clade or hervs under that clade as a list. Will be provided to the end user automatically.
+        herv_path_dict (dict): a dictionary with hervs as keys and the path back to the root as a list as values. Will be provided to the end user automatically
+
+    Returns:
+        A dataframe of the other method with all clades in addition to the ERV leaves.
+    """
     other_df = pd.read_csv(
         path_to_other_csv, index_col=0)  # import the other dataframe to map to the tree.
 

@@ -9,10 +9,8 @@ __pycache__/
 
 # user-defined files
 meta.yaml
+output
 output/*
-!output/*/
-!output/.gitkeep
-!output/*/.gitkeep
 
 # C extensions
 *.so
