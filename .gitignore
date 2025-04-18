@@ -1,5 +1,6 @@
 # Data files
-src/ervmancer/data/*
+src/ervmancer/data/clean_kmer_31_60_percent_cutoff.pkl
+src/ervmancer/data/GRCh38_noalt_as
 
 #Byte-compiled / optimized / DLL files
 **/.DS_Store

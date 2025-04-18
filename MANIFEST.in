@@ -1,6 +1,5 @@
 recursive-include src/ervmancer/data *.bed
 recursive-include src/ervmancer/data *.pkl
-recursive-include src/ervmancer/data/ *.pkl
 recursive-include src/ervmancer/data/GRCh38_noalt_as *
 include LICENSE
 include README.md
