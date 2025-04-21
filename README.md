@@ -32,7 +32,15 @@ The following are dependencies for ERVmancer (and are also in bioconda)
 * samtools >= 1.2
 * bedtools >= 2.29.2
 
-## Troubleshooting
+### Releasing Versions
+
+This project uses [SemVer](https://semver.org/) for versioning. In order to create a release package. Click [create a new release](https://github.com/AuslanderLab/ERVmancer/releases/new) and create a new tag with the corresponding bumped version ```(vX.y.z)```. Once a release has been published, update ervmancer on [bioconda-recipes](https://github.com/bioconda/bioconda-recipes/tree/master/recipes/ervmancer) with the proper versioning and sha256 hash.
+
+To grab the sha256 hash of the new release, download the tar file from the ervmancer releases page and use the following command:
+
+```wget -O- $URL | shasum -a 256```
+
+## Conda Troubleshooting
 
 See internal cluster docs or Notion for more information. For default testing of ervmancer on your local machine, see below:
 
