@@ -6,15 +6,15 @@ import pickle
 import subprocess
 import pkg_resources
 from tqdm import tqdm
+import hashlib
+import random
+import string
 from ervmancer.preprocessing.filter_reads import ReadFilter
 from ervmancer.preprocessing.subset_reads import extract_out_original_reads_by_subset
 from ervmancer.kmer.process_kmer import parse_fastq_run_kmer_return_dict
 from ervmancer.multimap.multimapped_sam import single_multimapped_sam_to_dictionary
 from ervmancer.resolve_reads.resolve_and_export import resolve_reads_single_sample_final, convert_final_dict_into_csv
 from ervmancer.resolve_reads.other_methods import assign_tree_for_other_methods
-import hashlib
-import random
-import string
 
 
 def retrieve_pickled_python_obj(pathname: str):
@@ -52,7 +52,7 @@ def generate_random_hash(length: int = 8):
 def get_unique_id():
     """Wrapper function to generate a unique ID hash
 
-    Returns:
+    Returns:    
         str: random hash string with size @length
     """
     return generate_random_hash()
@@ -98,18 +98,6 @@ def get_data_path(filename: str, subdir: str = None):
         return os.path.join(base_path, 'data', filename)
 
 
-def get_default_bowtie_index():
-    """Wrapper function to get the default bowtie index
-
-    Returns:
-        str: Absolute path to the GRCh38_noalt_as indices for bowtie2.
-    """
-    # Get the directory containing the bowtie2 index files
-    index_dir = get_data_path('', subdir='GRCh38_noalt_as')
-    # Return the index prefix (without any file extensions)
-    return os.path.join(index_dir, 'GRCh38_noalt_as')
-
-
 def cleanup_intermediate_files(unique_id: str, output_pathname: str, keep_intermediate: bool):
     """Removes intermediate files that belong to the specific process run/command of ervmancer using the unique hash.
 
@@ -143,7 +131,9 @@ def cleanup_intermediate_files(unique_id: str, output_pathname: str, keep_interm
 
 def main():
     parser = argparse.ArgumentParser(description='ervmancer')
-    parser.add_argument('--b', type=str, required=False,
+    parser.add_argument('--kd', '--kmer_dict', dest='kmer_dict', required=False,
+                        help="Absolute path to the kmer dictionary file (clean_kmer_31_60_percent_cutoff.pkl).")
+    parser.add_argument('--b', '--bt2', dest='b', type=str, required=False,
                         help="User provided absolute path to self provided bowtie2 alignment file.")
     parser.add_argument('--advanced', type=str, required=False,
                         help="User provided absolute path to CSV file with user-provided read counts from other methods.")
@@ -167,15 +157,40 @@ def main():
                         format='%(asctime)s - %(levelname)s - %(message)s', force=True)
 
     # PROVIDED DICTIONARIES
-    kmer_herv_dict_pathname = get_data_path(
-        'clean_kmer_31_60_percent_cutoff.pkl')
-    clades_under_dict_pathname = get_data_path(
-        'cleaned_clades_under_dict.pkl')
+    if args.kmer_dict is None and args.b and not args.advanced:
+        # If using b mode (which needs kmer dict) but no dict is provided and not in advanced mode
+        logging.error(
+            "Kmer dictionary file path (--kmer_dict) is required when using --b without --advanced.")
+        sys.exit(1)
+    elif args.kmer_dict is not None and not os.path.exists(args.kmer_dict) and (args.b or not args.advanced):
+        # If dict is provided but doesn't exist, and we're in a mode that would use it
+        logging.error(f"Kmer dictionary file not found at: {args.kmer_dict}")
+        sys.exit(1)
+    elif args.kmer_dict is not None:
+        # Only set the pathname if a dictionary was provided
+        kmer_herv_dict_pathname = os.path.abspath(args.kmer_dict)
+    else:
+        # In advanced mode without kmer_dict, set to None or a default value
+        kmer_herv_dict_pathname = None
+
+    clades_under_dict_pathname = get_data_path('cleaned_clades_under_dict.pkl')
     herv_path_dict_pathname = get_data_path('herv_path_dict.pkl')
 
-    kmer_herv_dict = retrieve_pickled_python_obj(kmer_herv_dict_pathname)
-    clades_under_dict = retrieve_pickled_python_obj(clades_under_dict_pathname)
-    herv_path_dict = retrieve_pickled_python_obj(herv_path_dict_pathname)
+    logging.info(f"Using kmer dictionary: {kmer_herv_dict_pathname}")
+    try:
+        if kmer_herv_dict_pathname is not None:
+            kmer_herv_dict = retrieve_pickled_python_obj(
+                kmer_herv_dict_pathname)
+        else:
+            # advanced mode does not need kmer dict
+            kmer_herv_dict = None
+
+        clades_under_dict = retrieve_pickled_python_obj(
+            clades_under_dict_pathname)
+        herv_path_dict = retrieve_pickled_python_obj(herv_path_dict_pathname)
+    except Exception as e:
+        logging.error(f"Error loading dictionary files: {str(e)}")
+        sys.exit(1)
 
     read_filter = ReadFilter(args.output_dir, args.r1,
                              args.r2, args.s1, args.advanced)
@@ -203,38 +218,29 @@ def main():
             logging.error(
                 "Invalid Path - please provide absolute path to CSV file.")
 
-    # ENTRYPOINT ONE - Check if bowtie2 index is provided or use default if bowtie2 needs to be run
-    if not args.b:
-        if args.bowtie_index:
-            # Check for the existence of all six bowtie2 index files
-            bt2_extensions = [".1.bt2", ".2.bt2", ".3.bt2",
-                              ".4.bt2", ".rev.1.bt2", ".rev.2.bt2"]
-            bt2l_extensions = [".1.bt2l", ".2.bt2l", ".3.bt2l",
-                               ".4.bt2l", ".rev.1.bt2l", ".rev.2.bt2l"]
+    # ENTRYPOINT ONE - Check if bowtie2 index is provided and we are using the bowtie2 entrypoint
+    if not args.b and not args.advanced:
+        if args.bowtie_index is None:
+            logging.error(
+                "Bowtie2 index path (--bowtie_index) is required when not given a provided bowtie2 sam file or advanced mode.")
+            sys.exit(1)
+        # Check for the existence of all six bowtie2 index files if were using the bowtie2 process entrypoint
+        bt2_extensions = [".1.bt2", ".2.bt2", ".3.bt2",
+                          ".4.bt2", ".rev.1.bt2", ".rev.2.bt2"]
+        bt2l_extensions = [".1.bt2l", ".2.bt2l", ".3.bt2l",
+                           ".4.bt2l", ".rev.1.bt2l", ".rev.2.bt2l"]
 
-            # Check if regular or large index files exist
-            regular_index_exists = all(os.path.exists(
-                f"{args.bowtie_index}{ext}") for ext in bt2_extensions)
-            large_index_exists = all(os.path.exists(
-                f"{args.bowtie_index}{ext}") for ext in bt2l_extensions)
+        # Check if regular or large index files exist
+        regular_index_exists = all(os.path.exists(
+            f"{args.bowtie_index}{ext}") for ext in bt2_extensions)
+        large_index_exists = all(os.path.exists(
+            f"{args.bowtie_index}{ext}") for ext in bt2l_extensions)
 
-            if not (regular_index_exists or large_index_exists):
-                logging.error(
-                    "Provided Bowtie index is incomplete. All six index files (.1.bt2, .2.bt2, .3.bt2, .4.bt2, .rev.1.bt2, .rev.2.bt2) or their large index equivalent should exist.")
-                sys.exit(1)
-        else:
-            # Use default index
-            args.bowtie_index = get_default_bowtie_index()
-            logging.info(
-                f"Using built-in GRCh38_noalt_as bowtie2 index: {args.bowtie_index}")
-
-            # Verify all default index files exist
-            bt2_extensions = [".1.bt2", ".2.bt2", ".3.bt2",
-                              ".4.bt2", ".rev.1.bt2", ".rev.2.bt2"]
-            if not all(os.path.exists(f"{args.bowtie_index}{ext}") for ext in bt2_extensions):
-                logging.error(
-                    "Built-in Bowtie index files not found or incomplete. Please check installation or provide custom index.")
-                sys.exit(1)
+        if not (regular_index_exists or large_index_exists):
+            logging.error(
+                "Provided Bowtie index is incomplete. All six index files (.1.bt2, .2.bt2, .3.bt2, .4.bt2, .rev.1.bt2, .rev.2.bt2) or their large index equivalent should exist.")
+            sys.exit(1)
+        logging.info(f"Using bowtie2 index: {args.bowtie_index}")
 
     try:
         if args.b:
@@ -342,14 +348,12 @@ def main():
             read_to_kmer_assignment_dict = parse_fastq_run_kmer_return_dict(input_sam_pathname=pathname_extracted_reads,
                                                                             kmer_herv_dict=kmer_herv_dict,
                                                                             path_dict=herv_path_dict,
-                                                                            under_clade_dict=clades_under_dict,
                                                                             kmer_size=31,
                                                                             paired_end=True)
         else:
             read_to_kmer_assignment_dict = parse_fastq_run_kmer_return_dict(input_sam_pathname=pathname_extracted_reads,
                                                                             kmer_herv_dict=kmer_herv_dict,
                                                                             path_dict=herv_path_dict,
-                                                                            under_clade_dict=clades_under_dict,
                                                                             kmer_size=31,
                                                                             paired_end=False)
 

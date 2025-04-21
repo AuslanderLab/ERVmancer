@@ -36,7 +36,7 @@ The following are dependencies for ERVmancer (and are also in bioconda)
 
 See internal cluster docs or Notion for more information. For default testing of ervmancer on your local machine, see below:
 
-To set up a fresh environment to test ervmancer locally:
+To set up a fresh environment to build/test ervmancer locally:
 
 ```bash
 conda create -n ervmancer_local
@@ -54,8 +54,19 @@ To iteratively test ervmancer as a local package and clear your cache:
 conda build purge
 # Build locally and install
 conda build . -c bioconda
-conda install -y ervmancer
+conda install -y <path_to_local_ervmancer_build>
 ```
+
+Usually, if a versioning conflict happens when installing your local test build please look for a similar excerpt to below, near the ending of the build standard output:
+```
+# To have conda build upload to anaconda.org automatically, use
+# conda config --set anaconda_upload yes
+anaconda upload \
+    /home/<user>/conda-bld/noarch/ervmancer-0.0.x-py_x.tar.bz2
+anaconda_upload is not set.  Not uploading wheels: []
+```
+
+The path after anaconda upload, should be the manual install path to the local ervmancer package build.
 
 ## Authors
 * Andrew Patterson

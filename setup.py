@@ -10,6 +10,9 @@ setup(
     packages=find_packages("src"),
     package_dir={"": "src"},
     include_package_data=True,
+    package_data={
+        "ervmancer": ["data/*.pkl", "data/*.bed"],
+    },
     python_requires=">=3.8",
     install_requires=[
         "numpy",
