@@ -12,7 +12,7 @@ conda config --add channels conda-forge
 conda install ervmancer
 ```
 
-Download ```clean_kmer_31_60_percent_cutoff.pkl``` and ```GRCh38_noalt_as.tar.gz``` from [Zenodo](https://zenodo.org/records/15231904). Move these files from your donload directory to your desired directory and extract the GRCh38 index.
+Download ```clean_kmer_31_60_percent_cutoff.pkl``` and ```GRCh38_noalt_as.tar.gz``` from [Zenodo](https://zenodo.org/records/15231904). Move these files from your download directory to your desired directory and extract the GRCh38 index.
 
 ```tar -xzf <path to tar.gz> -C <desired extracted folder output path>```
 
