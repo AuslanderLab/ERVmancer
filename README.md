@@ -1,12 +1,28 @@
-# Ervrmancer
+# ERVmancer
 
 ERVmancer is a bioinformatics conda package that quantifies Human Endogenous Retrovirus (HERV) short read RNA sequencing expression data by aligning short reads to a curated subset of HERVs and then resolving ambiguity in alignment using a pre-computed HERV phylogenetic tree.
 
-## Installation and Usage
+## User Installation and Usage
 
+In your desired conda virtual environment, install using the below commands.
 ```bash
-conda install -c bioconda ervmancer
+# necessary for ervmancer and its dependencies
+conda config --add channels bioconda
+conda config --add channels conda-forge
+conda install ervmancer
 ```
+
+Download ```clean_kmer_31_60_percent_cutoff.pkl``` and ```GRCh38_noalt_as.tar.gz``` from [Zenodo](https://zenodo.org/records/15231904). Move these files from your donload directory to your desired directory and extract the GRCh38 index.
+
+```tar -xzf <path to tar.gz> -C <desired extracted folder output path>```
+
+### Usage Options
+
+See below gists for examples on how to run the possible parameters/entrypoints:
+* [Full Run w/ Bowtie2 - Paired or Single Strand](https://gist.github.com/bryantduong/6aa0ef579d5abccd98d1d613ed01d29b)
+* [User Provided Bowtie2 SAM file](https://gist.github.com/bryantduong/4c49e20f5affc83c2e2841e71f4195f8)
+* [Resolving with data from other Methods/Advanced Mode](https://gist.github.com/bryantduong/b376b6d82da5b52541c7ea9fd7fa4487)
+
 
 ## Maintainer Directions
 ### Setting up Your Local Environment (Linux)
@@ -27,10 +43,12 @@ The bowtie2 indices used
 
 ### Dependencies
 
-The following are dependencies for ERVmancer (and are also in bioconda)
+The following are dependencies for ERVmancer (and are also in the bioconda/conda-forge channel)
 * bowtie2 >= 2.42
 * samtools >= 1.2
 * bedtools >= 2.29.2
+
+The metadata used in this package is hosted on [Zenodo](https://zenodo.org/records/15231904) and can be downloaded here.
 
 ### Releasing Versions
 
