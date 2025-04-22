@@ -39,8 +39,6 @@ conda create -n <environment_name> python=3.8
 conda install -n <environment_name> conda-build git conda-verify
 ```
 
-The bowtie2 indices used 
-
 ### Dependencies
 
 The following are dependencies for ERVmancer (and are also in the bioconda/conda-forge channel)
@@ -94,6 +92,6 @@ anaconda_upload is not set.  Not uploading wheels: []
 
 The path after anaconda upload, should be the manual install path to the local ervmancer package build.
 
-## Authors
+## Package Authors
 * Andrew Patterson
 * Bryant Duong
