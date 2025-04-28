@@ -9,6 +9,7 @@ ERVmancer is a bioinformatics conda package that quantifies Human Endogenous Ret
 In your desired conda virtual environment, install using the below commands.
 ```bash
 # necessary for ervmancer and its dependencies
+conda create -n ervmancer_env
 conda config --add channels bioconda
 conda config --add channels conda-forge
 conda install ervmancer
