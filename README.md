@@ -57,7 +57,7 @@ This project uses [SemVer](https://semver.org/) for versioning. In order to crea
 
 To grab the sha256 hash of the new release, download the tar file from the ervmancer releases page and use the following command:
 
-```wget -O- $URL | shasum -a 256```
+```wget -O- https://github.com/AuslanderLab/ERVmancer/archive/refs/tags/v<version>.tar.gz | shasum -a 256```
 
 ## Conda Troubleshooting
 
