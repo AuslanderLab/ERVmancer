@@ -77,6 +77,7 @@ conda config --set channel_priority strict
 To iteratively test ervmancer as a local package and clear your cache:
 
 ```bash
+conda uninstall -y ervmancer
 # Purge previous local copies
 conda build purge
 # Build locally and install
