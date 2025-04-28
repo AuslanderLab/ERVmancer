@@ -1,5 +1,7 @@
 # ERVmancer
 
+[![Anaconda-Server Badge](https://anaconda.org/bioconda/ervmancer/badges/version.svg)](https://anaconda.org/bioconda/ervmancer) [![Anaconda-Server Badge](https://anaconda.org/bioconda/ervmancer/badges/platforms.svg)](https://anaconda.org/bioconda/ervmancer)
+
 ERVmancer is a bioinformatics conda package that quantifies Human Endogenous Retrovirus (HERV) short read RNA sequencing expression data by aligning short reads to a curated subset of HERVs and then resolving ambiguity in alignment using a pre-computed HERV phylogenetic tree.
 
 ## User Installation and Usage
