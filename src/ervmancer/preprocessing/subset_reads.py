@@ -35,7 +35,7 @@ def process_fastq_chunk(fastq_file, kept_reads):
         fastq_file.readline()
 
         # Extract read ID without @ and /1 or /2 suffix
-        read_id = id_line.split('/')[0].strip('@')
+        read_id = id_line.split('/')[0].split(' ')[0].strip('@')
 
         if read_id in kept_reads:
             yield read_id, seq_line
