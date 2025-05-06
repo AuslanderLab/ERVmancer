@@ -83,15 +83,18 @@ class ReadFilter:
 
         # Handle different input combinations
         if r1_path and r2_path:
+            # paired
             self.paired = True
             self.r1_path = self.validator.validate_input_file(r1_path)
             self.r2_path = self.validator.validate_input_file(r2_path)
             self.base_name = self._get_base_name(r1_path)
         elif s1_path:
+            # any type of single strand
             self.paired = False
             self.s1_path = self.validator.validate_input_file(s1_path)
             self.base_name = self._get_base_name(s1_path)
         elif csv_path:
+            # entrypoint 3 - csv/other method
             self.paired = False
             self.base_name = self._get_base_name(csv_path)
 
@@ -107,8 +110,14 @@ class ReadFilter:
         base_name = os.path.splitext(os.path.basename(filepath))[0]
         if base_name.endswith('.fastq'):
             return base_name[:-6]
+        elif base_name.endswith('.fastq.gz'):
+            return base_name[:-9]
+        elif base_name.endswith('.fq'):
+            return base_name[:-3]
+        elif base_name.endswith('.fq.gz'):
+            return base_name[:-6]
         elif base_name.endswith('.csv'):
-            return base_name[:-4] if base_name.endswith('.csv') else base_name
+            return base_name[:-4]
         return base_name
 
     def get_path(self, subdir: str, filename: str, ext: str) -> str:

@@ -254,6 +254,7 @@ def main():
                     logging.info(
                         f"Using user provided alignment file: {outsam_pathname}")
                     if args.r1 and not args.s1:
+                        # TODO: Check with Andrew about this 
                         # if they provided a paired end file then set boolean flag to paired
                         logging.info(
                             "User provided Bowtie2 input and paired read file for normalization")
