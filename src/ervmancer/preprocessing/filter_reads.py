@@ -118,7 +118,8 @@ class ReadFilter:
             return base_name[:-6]
         elif base_name.endswith('.csv'):
             return base_name[:-4]
-        return base_name
+        else:
+            return base_name
 
     def get_path(self, subdir: str, filename: str, ext: str) -> str:
         """Grabs a path using Python's os library to create an abspath
