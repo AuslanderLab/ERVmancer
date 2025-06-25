@@ -9,7 +9,6 @@ __pycache__/
 *$py.class
 
 # user-defined files
-meta.yaml
 output
 output/*
 
