@@ -312,7 +312,7 @@ def main():
                           f"-k 100 -S {outsam_pathname} "
                           f"2> {read_filter.get_path('logs', base_name, f'bt2_paired_{unique_id}.err')}")
             else:
-                bt_cmd = (f"bowtie2 -p {args.num_cores} -N 1 -L 10 --very-sensitive --end-to-end --no-unal "
+                bt_cmd = (f"bowtie2 -p {args.num_cores} --very-sensitive --end-to-end --no-unal "
                           f"-x {args.bowtie_index} --score-min L,-0.1,-0.1 -U {read_filter.s1_path} "
                           f"-k 100 -S {outsam_pathname} "
                           f"2> {read_filter.get_path('logs', base_name, f'bt2_single_{unique_id}.err')}")
