@@ -21,10 +21,9 @@ Download ```clean_kmer_31_60_percent_cutoff.pkl``` and ```GRCh38_noalt_as.tar.gz
 
 ### Usage Options
 
-See below gists for examples on how to run the possible parameters/entrypoints:
-* [Full Run w/ Bowtie2 - Paired or Single Strand](https://gist.github.com/bryantduong/6aa0ef579d5abccd98d1d613ed01d29b)
-* [User Provided Bowtie2 SAM file](https://gist.github.com/bryantduong/4c49e20f5affc83c2e2841e71f4195f8)
-* [Resolving with data from other Methods/Advanced Mode](https://gist.github.com/bryantduong/b376b6d82da5b52541c7ea9fd7fa4487)
+See below documentation for examples on how to run the possible parameters/entrypoints:
+*[Entrypoints 1 (from fastq file) and Entrypoints 2 (from aligned SAM file)](https://github.com/AuslanderLab/ERVmancer/blob/main/src/ervmancer/additional_documentation/primary_entrypoints_documentation.md)
+*[Advanced: Entrypoint 3 (mapping counts to phylogenetic tree)](https://github.com/AuslanderLab/ERVmancer/blob/main/src/ervmancer/additional_documentation/advanced_documentation_ervmancer.md)
 
 
 ## Maintainer Directions
