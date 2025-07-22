@@ -156,6 +156,25 @@ def main():
     logging.basicConfig(level=logging.INFO,
                         format='%(asctime)s - %(levelname)s - %(message)s', force=True)
 
+    # Create output directories if they do not exist
+    for subdir in ['intermediate_files', 'final', 'logs']:
+        os.makedirs(os.path.join(args.output_dir, subdir), exist_ok=True)
+    unique_id = get_unique_id()
+
+    read_filter = ReadFilter(args.output_dir, args.r1,
+                             args.r2, args.s1, args.advanced)
+    base_name, paired = read_filter.validate_inputs()
+
+    # set the log file name
+    log_file_out = read_filter.get_path(
+        'logs', f'{base_name}_{unique_id}_logs','txt')
+
+    # set up the log file.
+    file_handler = logging.FileHandler(log_file_out)
+    file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+
+    logging.getLogger().addHandler(file_handler)
+
     # PROVIDED DICTIONARIES
     if args.kmer_dict is None and args.b and not args.advanced:
         # If using b mode (which needs kmer dict) but no dict is provided and not in advanced mode
@@ -192,17 +211,11 @@ def main():
         logging.error(f"Error loading dictionary files: {str(e)}")
         sys.exit(1)
 
-    read_filter = ReadFilter(args.output_dir, args.r1,
-                             args.r2, args.s1, args.advanced)
-    base_name, paired = read_filter.validate_inputs()
     logging.info(f'Base Name: {base_name}')
-    # Create output directories if they do not exist
-    for subdir in ['intermediate_files', 'final', 'logs']:
-        os.makedirs(os.path.join(args.output_dir, subdir), exist_ok=True)
-    unique_id = get_unique_id()
 
     final_csv_out = read_filter.get_path(
         'final', f'{base_name}_{unique_id}_unified_run_final_out', 'csv')
+    
 
     if args.advanced and not ((args.r1 and args.r2) or args.s1):
         # ENTRYPOINT THREE - USER PROVIDED READS (FROM OTHER METHODS)
