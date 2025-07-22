@@ -22,7 +22,9 @@ Download ```clean_kmer_31_60_percent_cutoff.pkl``` and ```GRCh38_noalt_as.tar.gz
 ### Usage Options
 
 See below documentation for examples on how to run the possible parameters/entrypoints:
+
 *[Entrypoints 1 (from fastq file) and Entrypoints 2 (from aligned SAM file)](https://github.com/AuslanderLab/ERVmancer/blob/main/src/ervmancer/additional_documentation/primary_entrypoints_documentation.md)
+
 *[Advanced: Entrypoint 3 (mapping counts to phylogenetic tree)](https://github.com/AuslanderLab/ERVmancer/blob/main/src/ervmancer/additional_documentation/advanced_documentation_ervmancer.md)
 
 
