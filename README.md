@@ -4,6 +4,9 @@
 
 ERVmancer is a bioconda package that quantifies Human Endogenous Retrovirus (HERV) short read RNA sequencing expression data by aligning short reads to a curated subset of HERVs and then resolving ambiguity in alignment using a pre-computed HERV phylogenetic tree.
 
+Paper:
+A Patterson*, B Duong, L Yoon, M Foster, L MacMullen, S Soldan, J Wickramasinghe, P Lieberman, M Murphy, N Auslander. ERVmancer: A phylogenetic approach to quantification of human endogenous retrovirus expression. In Preparation.
+
 ## User Installation and Usage
 
 In your desired conda virtual environment, install using the below commands.
