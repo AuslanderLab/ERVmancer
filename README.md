@@ -4,7 +4,7 @@
 
 ERVmancer is a bioconda package that quantifies Human Endogenous Retrovirus (HERV) short read RNA sequencing expression data by aligning short reads to a curated subset of HERVs and then resolving ambiguity in alignment using a pre-computed HERV phylogenetic tree.
 
-Paper:
+## Paper
 
 A Patterson*, B Duong, L Yoon, M Foster, L MacMullen, S Soldan, J Wickramasinghe, A Srivastava, P Lieberman, M Murphy, N Auslander. ERVmancer: A phylogenetic approach to quantification of human endogenous retrovirus expression. In Preparation.
 
@@ -28,9 +28,9 @@ Download ```clean_kmer_31_60_percent_cutoff.pkl``` and ```GRCh38_noalt_as.tar.gz
 
 See below documentation for examples on how to run the possible parameters/entrypoints:
 
-*[Entrypoint 1 (from fastq file) and Entrypoint 2 (from aligned SAM file)](https://github.com/AuslanderLab/ERVmancer/wiki/Primary-Entrypoint-Guide)
+* [Entrypoint 1 (from fastq file) and Entrypoint 2 (from aligned SAM file)](https://github.com/AuslanderLab/ERVmancer/wiki/Primary-Entrypoint-Guide)
 
-*[Advanced: Entrypoint 3 (mapping counts to phylogenetic tree)](https://github.com/AuslanderLab/ERVmancer/wiki/Advanced-Entrypoint-Guide)
+* [Advanced: Entrypoint 3 (mapping counts to phylogenetic tree)](https://github.com/AuslanderLab/ERVmancer/wiki/Advanced-Entrypoint-Guide)
 
 
 ## Maintainer Directions
