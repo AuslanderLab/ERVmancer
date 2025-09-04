@@ -6,7 +6,7 @@ ERVmancer is a bioconda package that quantifies Human Endogenous Retrovirus (HER
 
 ## Paper
 
-Andrew Patterson, Bryant Duong, Leena Yoon, Maya Foster, Lauren MacMullen, Samantha Soldan, Jayamanna Wickramasinghe, Anastasia Lucas, Avi Srivastava, Maureen Murphy, Paul Lieberman, Noam Auslander. ERVmancer: A phylogenetic approach to quantification of human endogenous retrovirus expression. In Preparation.
+Andrew Patterson, Bryant Duong, Leena Yoon, Maya Foster, Lauren MacMullen, Jayamanna Wickramasinghe, Anastasia Lucas, Avi Srivastava, Steven Jacobson, Maureen Murphy, Samantha Soldan, Paul Lieberman, Noam Auslander. ERVmancer: A phylogenetic approach to quantification of human endogenous retrovirus expression. In Preparation.
 
 ## User Installation and Usage
 
