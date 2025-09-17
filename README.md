@@ -32,6 +32,8 @@ See below documentation for examples on how to run the possible parameters/entry
 
 * [Advanced: Entrypoint 3 (mapping counts to phylogenetic tree)](https://github.com/AuslanderLab/ERVmancer/wiki/Advanced-Entrypoint-Guide)
 
+* [Clade Interpretation: understanding the elements within each clade](https://github.com/AuslanderLab/ERVmancer/wiki/Clade-Interpretation)
+
 
 ## Maintainer Directions
 ### Setting up Your Local Environment (Linux)
