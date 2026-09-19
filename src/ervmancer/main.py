@@ -397,7 +397,7 @@ def main():
         cleanup_intermediate_files(unique_id, args.output_dir, args.keep_files)
 
     except Exception as e:
-        logging.error(f"An error occurred: {str(e)}")
+        logging.exception(f"An error occurred: {e}")
         sys.exit(1)
 
 
