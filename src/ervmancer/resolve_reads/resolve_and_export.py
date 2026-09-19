@@ -168,6 +168,7 @@ def resolve_reads_single_sample_final(kmer_dict, multi_dict, clade_dict):
         for key in kmer_dict.keys():  # for every read id, we need to check the kmer clade assignment and the multimap clade assignment. This step also filters to only the kmer assigned reads.
             # skip reads with a kmer assignment but no multimap assignment - this should not happen since prior multimap step uses filtering step check
             if key not in multi_dict:
+                logging.info("Skipping read with kmer assignment but no multimap assignment: {}".format(key))
                 continue
             # If they are the same, then add the key and value to resolved_id_dict
             if kmer_dict[key] == multi_dict[key]:
