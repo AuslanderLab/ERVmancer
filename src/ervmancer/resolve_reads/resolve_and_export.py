@@ -1,7 +1,7 @@
 import pandas as pd
 import regex as re
 import subprocess
-
+import logging
 
 def append_dict_to_df(new_dict: dict, df: pd.DataFrame, name_of_sample: str):
     """Takes a dictionary and a dataframe, and appends the dictionary values as row entries using the keys as columns.
@@ -163,60 +163,66 @@ def resolve_reads_single_sample_final(kmer_dict, multi_dict, clade_dict):
     # finally, a dictionary of the reads that were resolved using both at the same level.
     resolved_both_dict = {}
 
-    # for every read id, we need to check the kmer clade assignment and the multimap clade assignment.
-    for key in kmer_dict.keys():  # for every read id, we need to check the kmer clade assignment and the multimap clade assignment. This step also filters to only the kmer assigned reads.
-        # If they are the same, then add the key and value to resolved_id_dict
-        if kmer_dict[key] == multi_dict[key]:
-            # since they are the same, just use the kmer assigned dictionary.
-            resolved_id_dict[key] = kmer_dict[key]
-            # resolved_using_kmer_dict[key] = kmer_dict[key]
-            resolved_both_dict[key] = kmer_dict[key]
+    try:
+        # for every read id, we need to check the kmer clade assignment and the multimap clade assignment.
+        for key in kmer_dict.keys():  # for every read id, we need to check the kmer clade assignment and the multimap clade assignment. This step also filters to only the kmer assigned reads.
+            # skip reads with a kmer assignment but no multimap assignment - this should not happen since prior multimap step uses filtering step check
+            if key not in multi_dict:
+                continue
+            # If they are the same, then add the key and value to resolved_id_dict
+            if kmer_dict[key] == multi_dict[key]:
+                # since they are the same, just use the kmer assigned dictionary.
+                resolved_id_dict[key] = kmer_dict[key]
+                # resolved_using_kmer_dict[key] = kmer_dict[key]
+                resolved_both_dict[key] = kmer_dict[key]
 
-        # next, consider the cases where kmer is a leaf and multimap is a different leaf. Resolve this case by following the multimapped approach, since it has more information.
-        elif ('ERV_' == kmer_dict[key][0:4]) & ('ERV_' == multi_dict[key][0:4]):
-            resolved_id_dict[key] = multi_dict[key]
-            resolved_using_multimap_dict[key] = multi_dict[key]
+            # next, consider the cases where kmer is a leaf and multimap is a different leaf. Resolve this case by following the multimapped approach, since it has more information.
+            elif ('ERV_' == kmer_dict[key][0:4]) & ('ERV_' == multi_dict[key][0:4]):
+                resolved_id_dict[key] = multi_dict[key]
+                resolved_using_multimap_dict[key] = multi_dict[key]
 
-        # next, consider the case where the kmer is a leaf and multi is a node with children.
-        elif ('ERV_' == kmer_dict[key][0:4]) & ('ERV_' != multi_dict[key][0:4]):
-            # if that kmer leaf is in the multimapped subtree, then assign to the herv!
-            if kmer_dict[key] in clade_dict[multi_dict[key]]:
+            # next, consider the case where the kmer is a leaf and multi is a node with children.
+            elif ('ERV_' == kmer_dict[key][0:4]) & ('ERV_' != multi_dict[key][0:4]):
+                # if that kmer leaf is in the multimapped subtree, then assign to the herv!
+                if kmer_dict[key] in clade_dict[multi_dict[key]]:
+                    resolved_id_dict[key] = kmer_dict[key]
+                    resolved_using_kmer_dict[key] = kmer_dict[key]
+
+                # if not, resolve according to the default resolution, which is set to be the multimapped approach. This case will occure when the kmer approach assigned it to something outside of the multimap clade
+                else:
+                    resolved_id_dict[key] = multi_dict[key]
+                    resolved_using_multimap_dict[key] = multi_dict[key]
+
+            # next, consider the case where the kmer is a node with children and multi is a leaf
+            elif ('ERV_' != kmer_dict[key][0:4]) & ('ERV_' == multi_dict[key][0:4]):
+                # If the herv is in the clade, then assign to the herv!
+                if multi_dict[key] in clade_dict[kmer_dict[key]]:
+                    resolved_id_dict[key] = multi_dict[key]
+                    resolved_using_multimap_dict[key] = multi_dict[key]
+
+                # Otherwise, resolve according to the default resolution strategy, which is to default to the multimap.
+                else:
+                    resolved_id_dict[key] = multi_dict[key]
+                    resolved_using_multimap_dict[key] = multi_dict[key]
+
+            # next, consider the cases where both are clades
+            # The first to check is if the kmer clade is under the multi clade, which will resolve to the kmer dictionary clade
+            elif kmer_dict[key] in clade_dict[multi_dict[key]]:
                 resolved_id_dict[key] = kmer_dict[key]
                 resolved_using_kmer_dict[key] = kmer_dict[key]
 
-            # if not, resolve according to the default resolution, which is set to be the multimapped approach. This case will occure when the kmer approach assigned it to something outside of the multimap clade
+            # next, see if the multi clade is under the kmer clade. This will resolve to the multimap clade
+            elif multi_dict[key] in clade_dict[kmer_dict[key]]:
+                resolved_id_dict[key] = multi_dict[key]
+                resolved_using_multimap_dict[key] = multi_dict[key]
+
+            # finally, if none of the above worked, just default to whatever the default setting is
             else:
                 resolved_id_dict[key] = multi_dict[key]
                 resolved_using_multimap_dict[key] = multi_dict[key]
-
-        # next, consider the case where the kmer is a node with children and multi is a leaf
-        elif ('ERV_' != kmer_dict[key][0:4]) & ('ERV_' == multi_dict[key][0:4]):
-            # If the herv is in the clade, then assign to the herv!
-            if multi_dict[key] in clade_dict[kmer_dict[key]]:
-                resolved_id_dict[key] = multi_dict[key]
-                resolved_using_multimap_dict[key] = multi_dict[key]
-
-            # Otherwise, resolve according to the default resolution strategy, which is to default to the multimap.
-            else:
-                resolved_id_dict[key] = multi_dict[key]
-                resolved_using_multimap_dict[key] = multi_dict[key]
-
-        # next, consider the cases where both are clades
-        # The first to check is if the kmer clade is under the multi clade, which will resolve to the kmer dictionary clade
-        elif kmer_dict[key] in clade_dict[multi_dict[key]]:
-            resolved_id_dict[key] = kmer_dict[key]
-            resolved_using_kmer_dict[key] = kmer_dict[key]
-
-        # next, see if the multi clade is under the kmer clade. This will resolve to the multimap clade
-        elif multi_dict[key] in clade_dict[kmer_dict[key]]:
-            resolved_id_dict[key] = multi_dict[key]
-            resolved_using_multimap_dict[key] = multi_dict[key]
-
-        # finally, if none of the above worked, just default to whatever the default setting is
-        # TODO: Check if this is necessary, maybe with a print statement.
-        else:
-            resolved_id_dict[key] = multi_dict[key]
-            resolved_using_multimap_dict[key] = multi_dict[key]
+    except Exception as e:
+        logging.exception(f"Error resolving reads: {e}")
+        raise e
 
     # , resolved_using_kmer_dict, resolved_using_multimap_dict, resolved_both_dict
     return resolved_id_dict

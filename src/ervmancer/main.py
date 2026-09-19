@@ -155,6 +155,8 @@ def main():
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO,
                         format='%(asctime)s - %(levelname)s - %(message)s', force=True)
+    logging.info("Starting ERVmancer processing pipeline...")
+    logging.info("Use --help for more information on usage and arguments. --b AND --bowtie_iindex if alignments are already provided. --advanced if user has their own CSV file with read counts from other methods.")
 
     # Create output directories if they do not exist
     for subdir in ['intermediate_files', 'final', 'logs']:
