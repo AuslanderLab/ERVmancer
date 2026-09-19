@@ -70,7 +70,7 @@ def run_command(cmd: str):
     try:
         subprocess.run(cmd, shell=True, check=True)
     except subprocess.CalledProcessError as e:
-        logging.error(f"Command failed: {cmd}")
+        logging.exception(f"Command failed: {cmd} with error: {e}")
         raise e
 
 
@@ -208,7 +208,7 @@ def main():
             clades_under_dict_pathname)
         herv_path_dict = retrieve_pickled_python_obj(herv_path_dict_pathname)
     except Exception as e:
-        logging.error(f"Error loading dictionary files: {str(e)}")
+        logging.exception(f"Error loading dictionary files: {e}")
         sys.exit(1)
 
     logging.info(f'Base Name: {base_name}')
@@ -284,7 +284,7 @@ def main():
                         "Path to provided alignment file is invalid. File does not exist. Terminating program.")
                     sys.exit(1)
             except Exception as e:
-                logging.error(f"Error processing path: {str(e)}")
+                logging.exception(f"Error processing path: {e}")
                 sys.exit(1)
         else:
             outsam_pathname = read_filter.get_path(
