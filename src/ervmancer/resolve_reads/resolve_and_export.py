@@ -162,13 +162,19 @@ def resolve_reads_single_sample_final(kmer_dict, multi_dict, clade_dict):
     resolved_using_multimap_dict = {}
     # finally, a dictionary of the reads that were resolved using both at the same level.
     resolved_both_dict = {}
+    # count of skipped reads
+    skipped_count = 0
+    # list of examples of skipped reads
+    skipped_examples = []
 
     try:
         # for every read id, we need to check the kmer clade assignment and the multimap clade assignment.
         for key in kmer_dict.keys():  # for every read id, we need to check the kmer clade assignment and the multimap clade assignment. This step also filters to only the kmer assigned reads.
             # skip reads with a kmer assignment but no multimap assignment - this should not happen since prior multimap step uses filtering step check
             if key not in multi_dict:
-                logging.info("Skipping read with kmer assignment but no multimap assignment: {}".format(key))
+                skipped_count += 1
+                if len(skipped_examples) < 10:
+                    skipped_examples.append(key)
                 continue
             # If they are the same, then add the key and value to resolved_id_dict
             if kmer_dict[key] == multi_dict[key]:
@@ -224,6 +230,13 @@ def resolve_reads_single_sample_final(kmer_dict, multi_dict, clade_dict):
     except Exception as e:
         logging.exception(f"Error resolving reads: {e}")
         raise e
+    
+    if skipped_count:
+        # if we have skipped reads, give a count of the skipped ID's and some examples for user to debug.
+        # this should not happen due to the way the filtering step works but it is good as a redundant guardrail
+        logging.warning(
+            f"{skipped_count} of {len(kmer_dict)} kmer-assigned reads had no multimap "
+            f"assignment and were skipped (examples: {skipped_examples})")
 
     # , resolved_using_kmer_dict, resolved_using_multimap_dict, resolved_both_dict
     return resolved_id_dict
