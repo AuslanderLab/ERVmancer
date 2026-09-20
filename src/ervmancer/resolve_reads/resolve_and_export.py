@@ -235,7 +235,7 @@ def resolve_reads_single_sample_final(kmer_dict, multi_dict, clade_dict):
         # if we have skipped reads, give a count of the skipped ID's and some examples for user to debug.
         # this should not happen due to the way the filtering step works but it is good as a redundant guardrail
         logging.warning(
-            f"{skipped_count} of {len(kmer_dict)} kmer-assigned reads had no multimap "
+            f"{skipped_count} of {len(kmer_dict)} kmer-assigned reads had no multimap"
             f"assignment and were skipped (examples: {skipped_examples})")
 
     # , resolved_using_kmer_dict, resolved_using_multimap_dict, resolved_both_dict

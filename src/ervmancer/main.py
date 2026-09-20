@@ -4,7 +4,7 @@ import os
 import sys
 import pickle
 import subprocess
-import pkg_resources
+from importlib.resources import files
 from tqdm import tqdm
 import hashlib
 import random
@@ -85,11 +85,13 @@ def get_data_path(filename: str, subdir: str = None):
         str: absolute path to data module's desired file for usage in main method
     """
     try:
-        # pkg_resources for installed package
-        data_path = 'data'
+        # data subdir requires files for installed package
+        resource = files('ervmancer').joinpath('data')
         if subdir:
-            data_path = os.path.join(data_path, subdir)
-        return pkg_resources.resource_filename('ervmancer', os.path.join(data_path, filename))
+            resource = resource.joinpath(subdir)
+        resource = resource.joinpath(filename)
+        if resource.is_file():
+            return str(resource)
     except (ImportError, ModuleNotFoundError):
         # dev mode - relative path
         base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
